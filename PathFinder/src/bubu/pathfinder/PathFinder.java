@@ -325,15 +325,7 @@ public class PathFinder {
 
         while (keepLooping) {
 
-            adjacentBlocks = findAdjacentBlocks(mapArray, currentCoordinates, allowDiagonal, mapWidth, mapHeigth);
-
-            for (Coordinate currentAdjacentBlock : adjacentBlocks) {
-                int currentValue = mapArray[currentAdjacentBlock.getX()][currentAdjacentBlock.getY()];
-
-                if (currentValue == -1) {
-                    mapArray[currentAdjacentBlock.getX()][currentAdjacentBlock.getY()] = currentDistance;
-                }
-            }
+            adjacentBlocks = findAdjacentBlocks(mapArray, currentCoordinates, allowDiagonal, mapWidth, mapHeigth, currentDistance);
 
             if (adjacentBlocks.isEmpty()) {
                 throw new CannotFindPathException();
@@ -382,8 +374,7 @@ public class PathFinder {
 
     }
 
-    
-    private ArrayList<Coordinate> findAdjacentBlocks(int[][] map, List<Coordinate> locations, boolean allowDiagonal, int width, int height) throws Exception {
+    private ArrayList<Coordinate> findAdjacentBlocks(int[][] map, List<Coordinate> locations, boolean allowDiagonal, int width, int height, int currentDistance) throws Exception {
 
         ArrayList<Coordinate> coords = new ArrayList<Coordinate>();
 
@@ -406,72 +397,56 @@ public class PathFinder {
                 int diagonalCheckB;
 
                 if (location.getX() > 0 && location.getY() > 0) {
-
                     diagonalCheckA = map[location.getX() - 1][location.getY()];
                     diagonalCheckB = map[location.getX()][location.getY() - 1];
-
                     if (diagonalCheckA == -1 || diagonalCheckB == -1) {
                         coordinateArray.add(new Coordinate(location.getX() - 1, location.getY() - 1)); //down left
                     }
-
                 }
 
                 if (location.getX() > 0 && location.getY() < height - 1) {
-
                     diagonalCheckA = map[location.getX() - 1][location.getY()];
                     diagonalCheckB = map[location.getX()][location.getY() + 1];
-
                     if (diagonalCheckA == -1 || diagonalCheckB == -1) {
                         coordinateArray.add(new Coordinate(location.getX() - 1, location.getY() + 1)); // up left
                     }
-
                 }
 
                 if (location.getX() < width - 1 && location.getY() > 0) {
-
                     diagonalCheckA = map[location.getX() + 1][location.getY()];
                     diagonalCheckB = map[location.getX()][location.getY() - 1];
-
                     if (diagonalCheckA == -1 || diagonalCheckB == -1) {
                         coordinateArray.add(new Coordinate(location.getX() + 1, location.getY() - 1)); //down right
                     }
-
                 }
 
 
                 if (location.getX() < width - 1 && location.getY() < height - 1) {
-
-
                     diagonalCheckA = map[location.getX() + 1][location.getY()];
                     diagonalCheckB = map[location.getX()][location.getY() + 1];
-
                     if (diagonalCheckA == -1 || diagonalCheckB == -1) {
                         coordinateArray.add(new Coordinate(location.getX() + 1, location.getY() + 1)); // up right
                     }
-
                 }
-
-
             }
 
 
             for (Coordinate current : coordinateArray) {
-
                 if (current.getX() >= 0 && current.getX() < width && current.getY() >= 0 && current.getY() < height) { // range check
-
                     int adjacentLocationValue = map[current.getX()][current.getY()];
-                    if (adjacentLocationValue == -1 || adjacentLocationValue == -200) { // if adjacejt location is empty or end point
-
+                    if (adjacentLocationValue == -1) { // if adjacent location is empty
                         if (!coords.contains(current)) {
                             coords.add(current);
                         }
-
+                        map[current.getX()][current.getY()] = currentDistance;
+                    } else if (adjacentLocationValue == -200) { // if adjacent location is end point
+                        if (!coords.contains(current)) {
+                            coords.add(current);
+                        }
                     }
-
                 }
-
             }
-
+            
         }
 
         return coords;

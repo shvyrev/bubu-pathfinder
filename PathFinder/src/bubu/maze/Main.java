@@ -23,8 +23,8 @@ public class Main {
         startTime = System.currentTimeMillis();
 
 
-        int width = 1500;
-        int heigth = 1500;
+        int width = 2000;
+        int heigth = 2000;
         int linearFactor = 20000;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
@@ -52,6 +52,8 @@ public class Main {
             endTime = System.currentTimeMillis();
             System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + path.size() + " steps");
 
+
+            /*
             System.out.println("Saving image....");
 
             String filename = "C:\\Maze-"
@@ -73,7 +75,7 @@ public class Main {
                     imageFormat);
 
             Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filename + "." + imageFormat);
-            
+            */
         } catch (CannotFindPathException ex) {
             ex.printStackTrace();
         } catch (Exception ex) {

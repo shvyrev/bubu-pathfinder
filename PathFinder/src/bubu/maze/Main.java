@@ -1,5 +1,6 @@
 package bubu.maze;
 
+import bubu.astar.AStarPathFinder;
 import bubu.pathfinder.PathFinder;
 import bubu.pathfinder.beans.Coordinate;
 import bubu.pathfinder.beans.Map;
@@ -24,16 +25,16 @@ public class Main {
 
 
         int width = 2000;
-        int heigth = 2000;
+        int heigth = width;
         int linearFactor = 20000;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
         int lineMaximumLength = (int)(lineMinimumLength * 1.5);
-        double complexity = 0.3;
+        double complexity = 0.45;
 
-        int resizeFactor = 1;
+        int resizeFactor = 10;
 
-        String imageFormat = "gif";
+        String imageFormat = "png";
 
         Map map = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
 
@@ -48,10 +49,18 @@ public class Main {
 
             System.out.println("Finding path....");
             startTime = System.currentTimeMillis();
-            List<Coordinate> path = pathFinder.findPath(map, false);
+            List<Coordinate> path = pathFinder.findPath(map, true);
             endTime = System.currentTimeMillis();
             System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + path.size() + " steps");
-
+            //pathFinder.drawMap(map, (ArrayList) path);
+            
+            System.out.println("Finding path....");
+            AStarPathFinder aStarPathFinder = new AStarPathFinder();
+            startTime = System.currentTimeMillis();
+            path = aStarPathFinder.findPath(map);
+            endTime = System.currentTimeMillis();
+            System.out.println("Found path in " + (endTime - startTime) + " milliseconds");
+            //pathFinder.drawMap(map, (ArrayList) path);
 
             /*
             System.out.println("Saving image....");
@@ -76,6 +85,7 @@ public class Main {
 
             Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filename + "." + imageFormat);
             */
+            
         } catch (CannotFindPathException ex) {
             ex.printStackTrace();
         } catch (Exception ex) {

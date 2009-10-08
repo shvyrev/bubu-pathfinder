@@ -24,17 +24,17 @@ public class Main {
         startTime = System.currentTimeMillis();
 
 
-        int width = 2000;
-        int heigth = width;
-        int linearFactor = 20000;
+        int width = 25;
+        int heigth = 25;
+        int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
         int lineMaximumLength = (int)(lineMinimumLength * 1.5);
-        double complexity = 0.45;
+        double complexity = 1;
 
-        int resizeFactor = 10;
+        int resizeFactor = 1;
 
-        String imageFormat = "png";
+        String imageFormat = "bmp";
 
         Map map = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
 
@@ -47,11 +47,13 @@ public class Main {
         
         try {
 
-            System.out.println("Finding path....");
-            startTime = System.currentTimeMillis();
-            List<Coordinate> path = pathFinder.findPath(map, true);
-            endTime = System.currentTimeMillis();
-            System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + path.size() + " steps");
+            List<Coordinate> path = new ArrayList<Coordinate>();
+
+//            System.out.println("Finding path....");
+//            startTime = System.currentTimeMillis();
+//            path = pathFinder.findPath(map, false);
+//            endTime = System.currentTimeMillis();
+//            System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + path.size() + " steps");
             //pathFinder.drawMap(map, (ArrayList) path);
             
             System.out.println("Finding path....");
@@ -62,9 +64,10 @@ public class Main {
             System.out.println("Found path in " + (endTime - startTime) + " milliseconds");
             //pathFinder.drawMap(map, (ArrayList) path);
 
-            /*
+            
             System.out.println("Saving image....");
 
+            /*
             String filename = "C:\\Maze-"
                         + width + "x" + heigth + "-"
                         + linearFactor + "-"
@@ -84,7 +87,8 @@ public class Main {
                     imageFormat);
 
             Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filename + "." + imageFormat);
-            */
+             */
+            
             
         } catch (CannotFindPathException ex) {
             ex.printStackTrace();

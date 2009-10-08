@@ -60,7 +60,7 @@ public class AStarPathFinder {
         boolean keepLooping = true;
 
         while (keepLooping) {
-            //System.out.println(numberOfOpenListItems + " " + parentXVal +"," + parentYVal);
+            System.out.println(numberOfOpenListItems + " " + parentXVal +"," + parentYVal);
 
             if (numberOfOpenListItems != 0) {
                 parentXVal = openX[openList[1]];
@@ -100,7 +100,7 @@ public class AStarPathFinder {
 
                 for (int b = parentYVal - 1; b <= parentYVal + 1; b++) {
                     for (int a = parentXVal - 1; a <= parentXVal + 1; a++) {
-                        if (a != -1 && b != -1 && a != width && b != heigth) {
+                        if (a != -1 && b != -1 && a != width && b != heigth && (a == parentXVal || b == parentYVal)) {
                             if (whichList[a][b] != onClosedList) {
                                 if (map.getGrid()[a][b] != unwakable) {
                                     int corner = walkable;
@@ -184,6 +184,7 @@ public class AStarPathFinder {
             if (whichList[map.getEndLocation().getX()][map.getEndLocation().getY()] == onOpenList) {
 
                 int pathLength = 0;
+                System.out.println("Saving path");
 
                 int pathX = map.getEndLocation().getX();
                 int pathY = map.getEndLocation().getY();

@@ -60,7 +60,6 @@ public class AStarPathFinder {
         boolean keepLooping = true;
 
         while (keepLooping) {
-            System.out.println(numberOfOpenListItems + " " + parentXVal +"," + parentYVal);
 
             if (numberOfOpenListItems != 0) {
                 parentXVal = openX[openList[1]];

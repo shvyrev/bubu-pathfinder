@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package bubu.astar;
 
 import bubu.pathfinder.beans.Coordinate;
@@ -15,10 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 
-/**
- *
- * @author Reuben
- */
 public class AStarPathFinder {
 
     public AStarResponse findPath(Map map) throws CannotFindPathException, Exception {
@@ -197,7 +189,6 @@ public class AStarPathFinder {
             if (whichList[map.getEndLocation().getX()][map.getEndLocation().getY()] == onOpenList) {
 
                 int pathLength = 0;
-                System.out.println("Saving path");
 
                 int pathX = map.getEndLocation().getX();
                 int pathY = map.getEndLocation().getY();
@@ -309,14 +300,6 @@ public class AStarPathFinder {
 
                 } else {
 
-                    int colourVariance = 20;
-
-                    int colour1 = (int) ((((double) map.getGrid()[x][y] / (double) maxCost) * 255));
-                    int colour2 = (255 - colourVariance) + Math.abs(((int) ((double) map.getGrid()[x][y] / (double) 10) % (colourVariance * 4)) - (colourVariance * 2)) - (colourVariance);
-                    int colour3 = (int) ((((double) map.getGrid()[x][y] / (double) maxCost) * 255));
-
-                    int[] deadEndColour = new int[]{colour1, colour2, colour3};
-
                     double distanceProgressionPercentage = (double) map.getGrid()[x][y] / (double) maxCost;
 
                     int palettePosition = (int) ((double) distanceProgressionPercentage * (double) palette.length) - 1;
@@ -341,8 +324,6 @@ public class AStarPathFinder {
                             } else { // visited
 
                                 if (map.getGrid()[x][y] > 0) {
-
-                                    //System.out.println((double) map.getGrid()[x][y] / (double) maxCost);
 
                                     raster.setPixel(
                                             (x * resizeFactor) + rasterX,

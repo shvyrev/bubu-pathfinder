@@ -226,7 +226,7 @@ public class PathFinder {
 
         }
 
-        ImageIO.write(image, fileFormat.toUpperCase(), new File(filename + "." + fileFormat));
+        ImageIO.write(image, fileFormat.toUpperCase(), new File(filename));
 
     }
 

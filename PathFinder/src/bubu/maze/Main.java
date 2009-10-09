@@ -1,6 +1,7 @@
 package bubu.maze;
 
 import bubu.astar.AStarPathFinder;
+import bubu.astar.AStarResponse;
 import bubu.pathfinder.PathFinder;
 import bubu.pathfinder.beans.Coordinate;
 import bubu.pathfinder.beans.Map;
@@ -15,22 +16,19 @@ public class Main {
         long startTime = 0;
         long endTime = 0;
 
-
         PathFinder pathFinder = new PathFinder();
         MazeGenerator mg = new MazeGenerator();
-
 
         System.out.println("Generating maze....");
         startTime = System.currentTimeMillis();
 
-
-        int width = 25;
-        int heigth = 25;
+        int width = 950;
+        int heigth = 480;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
-        int lineMaximumLength = (int)(lineMinimumLength * 1.5);
-        double complexity = 1;
+        int lineMaximumLength = (int) (lineMinimumLength * 1.5);
+        double complexity = 0.5;
 
         int resizeFactor = 1;
 
@@ -43,8 +41,8 @@ public class Main {
         width = pathFinder.getMapWidth(map.getGrid());
         heigth = pathFinder.getMapHeigth(map.getGrid());
 
-        System.out.println("Generated maze of " + width + " x " + heigth + " in "  + (endTime - startTime) + " milliseconds");
-        
+        System.out.println("Generated maze of " + width + " x " + heigth + " in " + (endTime - startTime) + " milliseconds");
+
         try {
 
             List<Coordinate> path = new ArrayList<Coordinate>();
@@ -55,47 +53,38 @@ public class Main {
 //            endTime = System.currentTimeMillis();
 //            System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + path.size() + " steps");
             //pathFinder.drawMap(map, (ArrayList) path);
-            
+
             System.out.println("Finding path....");
             AStarPathFinder aStarPathFinder = new AStarPathFinder();
             startTime = System.currentTimeMillis();
-            path = aStarPathFinder.findPath(map);
+
+            AStarResponse aStarResponse = new AStarResponse();
+
+            aStarResponse = aStarPathFinder.findPath(map);
+
             endTime = System.currentTimeMillis();
             System.out.println("Found path in " + (endTime - startTime) + " milliseconds");
             //pathFinder.drawMap(map, (ArrayList) path);
 
-            
-            System.out.println("Saving image....");
+            String filename = "C:\\Maze-" + width + "x" + heigth + "-" + linearFactor + "-" + horizontalVerticalBias + "-" + lineMinimumLength + "-" + lineMaximumLength + "-" + complexity + "-" + resizeFactor + "." + imageFormat;
 
-            /*
-            String filename = "C:\\Maze-"
-                        + width + "x" + heigth + "-"
-                        + linearFactor + "-"
-                        + horizontalVerticalBias + "-"
-                        + lineMinimumLength + "-"
-                        + lineMaximumLength + "-"
-                        + complexity + "-"
-                        + resizeFactor;
+            System.out.println("Saving image...." + filename);
 
-            
-
-             pathFinder.saveMapImage(map,
-                    path,
+            aStarPathFinder.saveMapImage(map,
+                    aStarResponse.getPath(),
                     filename,
                     resizeFactor,
                     true,
-                    imageFormat);
+                    imageFormat,
+                    aStarResponse.getMaxCost());
 
-            Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filename + "." + imageFormat);
-             */
-            
-            
+            Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filename);
+
         } catch (CannotFindPathException ex) {
             ex.printStackTrace();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-     
-    }
 
+    }
 }

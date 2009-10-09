@@ -22,8 +22,10 @@ public class Main {
         System.out.println("Generating maze....");
         startTime = System.currentTimeMillis();
 
-        int width = 950;
-        int heigth = 480;
+
+
+        int width = 1100 / 2;
+        int heigth = 900 / 2;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
@@ -33,6 +35,10 @@ public class Main {
         int resizeFactor = 1;
 
         String imageFormat = "bmp";
+
+        String filename = "C:\\Maze-" + width + "x" + heigth + "-" + linearFactor + "-" + horizontalVerticalBias + "-" + lineMinimumLength + "-" + lineMaximumLength + "-" + complexity + "-" + resizeFactor + "." + imageFormat;
+
+
 
         Map map = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
 
@@ -47,36 +53,43 @@ public class Main {
 
             List<Coordinate> path = new ArrayList<Coordinate>();
 
-//            System.out.println("Finding path....");
-//            startTime = System.currentTimeMillis();
-//            path = pathFinder.findPath(map, false);
-//            endTime = System.currentTimeMillis();
-//            System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + path.size() + " steps");
-            //pathFinder.drawMap(map, (ArrayList) path);
 
-            System.out.println("Finding path....");
-            AStarPathFinder aStarPathFinder = new AStarPathFinder();
-            startTime = System.currentTimeMillis();
+            if (false) {
 
-            AStarResponse aStarResponse = new AStarResponse();
+                System.out.println("Finding path....");
+                startTime = System.currentTimeMillis();
+                path = pathFinder.findPath(map, false);
+                endTime = System.currentTimeMillis();
+                System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + path.size() + " steps");
+                pathFinder.saveMapImage(map,
+                        path,
+                        filename,
+                        resizeFactor,
+                        true,
+                        imageFormat);
+            }
 
-            aStarResponse = aStarPathFinder.findPath(map);
 
-            endTime = System.currentTimeMillis();
-            System.out.println("Found path in " + (endTime - startTime) + " milliseconds");
-            //pathFinder.drawMap(map, (ArrayList) path);
+            if (true) {
 
-            String filename = "C:\\Maze-" + width + "x" + heigth + "-" + linearFactor + "-" + horizontalVerticalBias + "-" + lineMinimumLength + "-" + lineMaximumLength + "-" + complexity + "-" + resizeFactor + "." + imageFormat;
+                System.out.println("Finding path....");
+                AStarPathFinder aStarPathFinder = new AStarPathFinder();
+                startTime = System.currentTimeMillis();
+                AStarResponse aStarResponse = new AStarResponse();
+                aStarResponse = aStarPathFinder.findPath(map);
 
-            System.out.println("Saving image...." + filename);
+                endTime = System.currentTimeMillis();
+                System.out.println("Found path in " + (endTime - startTime) + " milliseconds");
+                System.out.println("Saving image...." + filename);
 
-            aStarPathFinder.saveMapImage(map,
-                    aStarResponse.getPath(),
-                    filename,
-                    resizeFactor,
-                    true,
-                    imageFormat,
-                    aStarResponse.getMaxCost());
+                aStarPathFinder.saveMapImage(map,
+                        aStarResponse.getPath(),
+                        filename,
+                        resizeFactor,
+                        true,
+                        imageFormat,
+                        aStarResponse.getMaxCost());
+            }
 
             Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filename);
 

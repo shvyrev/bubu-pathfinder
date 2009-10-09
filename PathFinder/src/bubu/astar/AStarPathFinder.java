@@ -265,21 +265,11 @@ public class AStarPathFinder {
         int[] palette;
 
         ArrayList<Integer[]> paletteRoute = new ArrayList<Integer[]>();
-//        paletteRoute.add(new Integer[]{192, 128, 88});
-//        paletteRoute.add(new Integer[]{200, 206, 74});
-//        paletteRoute.add(new Integer[]{0, 0, 0});
-//        paletteRoute.add(new Integer[]{94, 219, 62});
-//        paletteRoute.add(new Integer[]{70, 210, 179});
-        paletteRoute.add(new Integer[]{0, 0, 0});
         paletteRoute.add(new Integer[]{255, 0, 0});
-        paletteRoute.add(new Integer[]{0, 0, 0});
+        paletteRoute.add(new Integer[]{0, 255, 255});
         paletteRoute.add(new Integer[]{0, 255, 0});
-        paletteRoute.add(new Integer[]{0, 0, 0});
-        paletteRoute.add(new Integer[]{255, 255, 0});
-        paletteRoute.add(new Integer[]{0, 0, 0});
 
         palette = generatePalette(paletteRoute);
-
 
         int mapWidth = getMapWidth(map.getGrid());
         int mapHeigth = getMapHeigth(map.getGrid());

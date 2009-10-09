@@ -173,15 +173,14 @@ public class AStarPathFinder {
                                         }
                                     }
 
-                                    map.getGrid()[a][b] = fCost[openList[m]];
-                                    if (fCost[openList[m]] > response.getMaxCost()) {
-                                        response.setMaxCost(fCost[openList[m]]);
+
+
+                                    map.getGrid()[a][b] = map.getGrid()[parentXVal][parentYVal] + 1;
+
+                                    if (map.getGrid()[a][b] > response.getMaxCost()) {
+                                        response.setMaxCost(map.getGrid()[a][b]);
                                     }
 
-//                                    map.getGrid()[a][b] = gCost[a][b];
-//                                    if (gCost[a][b] > response.getMaxCost()) {
-//                                        response.setMaxCost(gCost[a][b]);
-//                                    }
 
                                 }
                             }
@@ -263,6 +262,25 @@ public class AStarPathFinder {
 
     public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, int maxCost) throws IOException {
 
+        int[] palette;
+
+        ArrayList<Integer[]> paletteRoute = new ArrayList<Integer[]>();
+//        paletteRoute.add(new Integer[]{192, 128, 88});
+//        paletteRoute.add(new Integer[]{200, 206, 74});
+//        paletteRoute.add(new Integer[]{0, 0, 0});
+//        paletteRoute.add(new Integer[]{94, 219, 62});
+//        paletteRoute.add(new Integer[]{70, 210, 179});
+        paletteRoute.add(new Integer[]{0, 0, 0});
+        paletteRoute.add(new Integer[]{255, 0, 0});
+        paletteRoute.add(new Integer[]{0, 0, 0});
+        paletteRoute.add(new Integer[]{0, 255, 0});
+        paletteRoute.add(new Integer[]{0, 0, 0});
+        paletteRoute.add(new Integer[]{255, 255, 0});
+        paletteRoute.add(new Integer[]{0, 0, 0});
+
+        palette = generatePalette(paletteRoute);
+
+
         int mapWidth = getMapWidth(map.getGrid());
         int mapHeigth = getMapHeigth(map.getGrid());
 
@@ -309,6 +327,16 @@ public class AStarPathFinder {
 
                     int[] deadEndColour = new int[]{colour1, colour2, colour3};
 
+                    double distanceProgressionPercentage = (double) map.getGrid()[x][y] / (double) maxCost;
+
+                    int palettePosition = (int) ((double) distanceProgressionPercentage * (double) palette.length) - 1;
+                    if (palettePosition < 0) {
+                        palettePosition = 0;
+                    }
+
+
+                    int[] paletteColour = intToRgb(palette[palettePosition]);
+
                     for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
 
                         for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
@@ -319,14 +347,17 @@ public class AStarPathFinder {
                                         (x * resizeFactor) + rasterX,
                                         imageHeigth - 1 - ((y * resizeFactor) + rasterY),
                                         white);
-                            
+
                             } else { // visited
 
                                 if (map.getGrid()[x][y] > 0) {
+
+                                    //System.out.println((double) map.getGrid()[x][y] / (double) maxCost);
+
                                     raster.setPixel(
                                             (x * resizeFactor) + rasterX,
                                             imageHeigth - 1 - ((y * resizeFactor) + rasterY),
-                                            deadEndColour);
+                                            paletteColour);
 
                                 }
 
@@ -393,5 +424,87 @@ public class AStarPathFinder {
 
         ImageIO.write(image, fileFormat.toUpperCase(), new File(filename));
 
+    }
+
+    private int rgbToInt(int colour1, int colour2, int colour3) {
+
+        int ret = 0;
+        ret += colour1 + (colour2 * 256) + (colour3 * 256 * 256);
+        return ret;
+
+    }
+
+    private int[] intToRgb(int number) {
+
+        int[] rgb = new int[3];
+
+        rgb[0] = number % 256;
+        rgb[1] = ((int) ((double) number / (double) 256)) % 256;
+        rgb[2] = ((int) ((double) number / (double) (256 * 256))) % 256;
+
+        return rgb;
+    }
+
+    private int[] generatePalette(ArrayList<Integer[]> paletteRoute) {
+
+        ArrayList<Integer> retArrayList = new ArrayList<Integer>();
+
+        for (int i = 1; i < paletteRoute.size(); i++) {
+
+            Integer[] startRoute = paletteRoute.get(i - 1);
+            Integer[] endRoute = paletteRoute.get(i);
+
+            int distance = (int) Math.pow(Math.pow(Math.abs(startRoute[0] - endRoute[0]), 2) + Math.pow(Math.abs(startRoute[1] - endRoute[1]), 2) + Math.pow(Math.abs(startRoute[2] - endRoute[2]), 2), 0.5);
+
+            for (double z = 0; z <= distance; z++) {
+
+                int r = startRoute[0], g = startRoute[1], b = startRoute[2];
+                double temp = 0;
+
+                for (int c = 0; c < 3; c++) {
+
+                    if (startRoute[c] < endRoute[c]) {
+
+                        temp = startRoute[c] + ((z / distance) * (endRoute[c] - startRoute[c]));
+
+                    } else if (startRoute[c] > endRoute[c]) {
+
+                        temp = startRoute[c] - ((z / distance) * (startRoute[c] - endRoute[c]));
+
+                    } else {
+
+                        temp = startRoute[c];
+
+                    }
+
+                    if (c == 0) {
+                        r = (int) temp;
+                    } else if (c == 1) {
+                        g = (int) temp;
+                    } else if (c == 2) {
+                        b = (int) temp;
+                    }
+
+
+
+                }
+
+
+                retArrayList.add(rgbToInt(r, g, b));
+
+            }
+
+        }
+
+
+        int[] ret = new int[retArrayList.size()];
+
+        int counter = 0;
+        for (Integer current : retArrayList) {
+            ret[counter] = current.intValue();
+            counter++;
+        }
+
+        return ret;
     }
 }

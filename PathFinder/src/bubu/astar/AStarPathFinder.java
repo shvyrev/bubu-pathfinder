@@ -249,11 +249,11 @@ public class AStarPathFinder {
 
     }
 
-    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, int maxCost, ArrayList<Integer[]> paletteRoute) throws IOException {
+    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, int maxCost, ArrayList<Integer[]> deadEndPaletteRoute, ArrayList<Integer[]> pathPaletteRoute) throws IOException {
 
-        int[] palette;
+        int[] deadEndPalette;
 
-        palette = PaletteTools.generatePalette(paletteRoute);
+        deadEndPalette = PaletteTools.generatePalette(deadEndPaletteRoute);
 
         int mapWidth = getMapWidth(map.getGrid());
         int mapHeigth = getMapHeigth(map.getGrid());
@@ -273,7 +273,7 @@ public class AStarPathFinder {
         for (int y = 0; y < mapHeigth; y++) {
 
             for (int x = 0; x < mapWidth; x++) {
-                
+
                 if (map.getGrid()[x][y] == -2) {
                     // wall
                     raster.setPixels(
@@ -287,12 +287,12 @@ public class AStarPathFinder {
 
                     double distanceProgressionPercentage = (double) map.getGrid()[x][y] / (double) maxCost;
 
-                    int palettePosition = (int) ((double) distanceProgressionPercentage * (double) palette.length) - 1;
+                    int palettePosition = (int) ((double) distanceProgressionPercentage * (double) deadEndPalette.length) - 1;
 
                     palettePosition = palettePosition < 0 ? 0 : palettePosition;
-                    palettePosition = palettePosition >= palette.length ? palettePosition = palette.length - 1 : palettePosition;
+                    palettePosition = palettePosition >= deadEndPalette.length ? palettePosition = deadEndPalette.length - 1 : palettePosition;
 
-                    int[] paletteColour = PaletteTools.intToRgb(palette[palettePosition]);
+                    int[] deadEndColour = PaletteTools.intToRgb(deadEndPalette[palettePosition]);
 
                     if (!drawDeadEnds || map.getGrid()[x][y] <= 0) {
                         // unvisited
@@ -309,8 +309,10 @@ public class AStarPathFinder {
                                 imageHeigth - 1 - (y * resizeFactor),
                                 resizeFactor,
                                 resizeFactor,
-                                paletteColour);
+                                deadEndColour);
                     }
+
+                    deadEndColour = new int[]{0, 0, 0};
 
                 }
 
@@ -336,26 +338,16 @@ public class AStarPathFinder {
 
         int counter = 0;
 
+        int[] pathPalette = PaletteTools.generatePalette(pathPaletteRoute);
+
         for (Coordinate currentCoordinate : path) {
 
             counter++;
 
-            int[] pathColour = new int[]{
-                255 - Math.abs((int) (((counter / 5) % 510) - 255)),
-                0,
-                Math.abs((int) (((counter / 5) % 510) - 255))
-            };
-
-            if (counter % 3 == 0) {
-                pathColour = new int[]{255, 0, 0};
-            } else if (counter % 3 == 1) {
-                pathColour = new int[]{0, 255, 0};
-            } else if (counter % 3 == 2) {
-                pathColour = new int[]{0, 0, 255};
-            }
+            int[] pathColour = PaletteTools.intToRgb(pathPalette[counter % pathPalette.length]);
 
             raster.setPixels(
-                    currentCoordinate.getX()  * resizeFactor,
+                    currentCoordinate.getX() * resizeFactor,
                     imageHeigth - 1 - (currentCoordinate.getY() * resizeFactor),
                     resizeFactor,
                     resizeFactor,
@@ -364,7 +356,7 @@ public class AStarPathFinder {
         }
 
         ImageIO.write(image, fileFormat.toUpperCase(), new File(filename));
-        savePaletteImage(palette, 30, filename, fileFormat);
+        savePaletteImage(deadEndPalette, 30, filename, fileFormat);
 
     }
 

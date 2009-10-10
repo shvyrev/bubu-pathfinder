@@ -88,11 +88,11 @@ public class BuBuPathFinder {
 
     }
 
-    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, ArrayList<Integer[]> paletteRoute) throws IOException {
+    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, ArrayList<Integer[]> deadEndPaletteRoute, ArrayList<Integer[]> pathPaletteRoute) throws IOException {
 
-        int[] palette;
+        int[] deadEndPalette;
 
-        palette = PaletteTools.generatePalette(paletteRoute);
+        deadEndPalette = PaletteTools.generatePalette(deadEndPaletteRoute);
 
         int mapWidth = getMapWidth(map.getGrid());
         int mapHeigth = getMapHeigth(map.getGrid());
@@ -129,12 +129,12 @@ public class BuBuPathFinder {
 
                     double distanceProgressionPercentage = (double) map.getGrid()[x][y] / (double) pathSize;
 
-                    int palettePosition = (int) ((double) distanceProgressionPercentage * (double) palette.length) - 1;
+                    int palettePosition = (int) ((double) distanceProgressionPercentage * (double) deadEndPalette.length) - 1;
 
                     palettePosition = palettePosition < 0 ? 0 : palettePosition;
-                    palettePosition = palettePosition >= palette.length ? palettePosition = palette.length - 1 : palettePosition;
+                    palettePosition = palettePosition >= deadEndPalette.length ? palettePosition = deadEndPalette.length - 1 : palettePosition;
 
-                    int[] paletteColour = PaletteTools.intToRgb(palette[palettePosition]);
+                    int[] paletteColour = PaletteTools.intToRgb(deadEndPalette[palettePosition]);
 
                     if (!drawDeadEnds || map.getGrid()[x][y] <= 0) {
                         // unvisited
@@ -178,15 +178,13 @@ public class BuBuPathFinder {
 
         int counter = 0;
 
+        int[] pathPalette = PaletteTools.generatePalette(pathPaletteRoute);
+
         for (Coordinate currentCoordinate : path) {
 
             counter++;
 
-            int[] pathColour = new int[]{
-                255 - Math.abs((int) (((counter / 5) % 510) - 255)),
-                0,
-                Math.abs((int) (((counter / 5) % 510) - 255))
-            };
+            int[] pathColour = PaletteTools.intToRgb(pathPalette[counter % pathPalette.length]);
 
             raster.setPixels(
                     currentCoordinate.getX() * resizeFactor,
@@ -198,7 +196,7 @@ public class BuBuPathFinder {
         }
 
         ImageIO.write(image, fileFormat.toUpperCase(), new File(filename));
-        savePaletteImage(palette, 30, filename, fileFormat);
+        savePaletteImage(deadEndPalette, 30, filename, fileFormat);
 
     }
 

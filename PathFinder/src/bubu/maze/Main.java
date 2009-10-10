@@ -22,8 +22,8 @@ public class Main {
 
         StopWatch.startTimer();
 
-        int width = 1850 / 2;
-        int heigth = 950 / 2;
+        int width = 1350 / 2;
+        int heigth = 850 / 2;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
@@ -52,7 +52,16 @@ public class Main {
         boolean loadImageBuBu = false;
         boolean loadImageAStar = false;
 
-        ArrayList<Integer[]> paletteRoute = PaletteTools.generateRandomPaletteRoute();
+        ArrayList<Integer[]> deadEndPaletteRoute = PaletteTools.generateRandomPaletteRoute();
+
+        ArrayList<Integer[]> pathPaletteRoute = new ArrayList<Integer[]>();
+        pathPaletteRoute.add(new Integer[]{255, 255, 255});
+        pathPaletteRoute.add(new Integer[]{255, 255, 0});
+        pathPaletteRoute.add(new Integer[]{255, 255, 255});
+        pathPaletteRoute.add(new Integer[]{0, 255, 255});
+        pathPaletteRoute.add(new Integer[]{255, 255, 255});
+        pathPaletteRoute.add(new Integer[]{255, 0, 255});
+
 
         try {
 
@@ -74,7 +83,9 @@ public class Main {
                             resizeFactor,
                             true,
                             imageFormat,
-                            paletteRoute);
+                            deadEndPaletteRoute,
+                            pathPaletteRoute);
+                    
                     loadImageBuBu = true;
                 }
             }
@@ -99,7 +110,9 @@ public class Main {
                             true,
                             imageFormat,
                             aStarResponse.getMaxCost(),
-                            paletteRoute);
+                            deadEndPaletteRoute,
+                            pathPaletteRoute);
+                    
                     loadImageAStar = true;
                 }
             }

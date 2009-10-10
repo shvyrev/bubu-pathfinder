@@ -28,21 +28,24 @@ public class Main {
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
         int lineMaximumLength = (int) (lineMinimumLength * 1.5);
-        double complexity = 0.9;
+        double complexity = 0.1;
 
         int resizeFactor = 1;
 
-        String imageFormat = "png";
+        String imageFormat = "bmp";
         String filename = "C:\\Maze-" + width + "x" + heigth + "-" + linearFactor + "-" + horizontalVerticalBias + "-" + lineMinimumLength + "-" + lineMaximumLength + "-" + complexity + "-" + resizeFactor;
         String filenameAStar = filename + "-AStar." + imageFormat;
         String filenameBuBu = filename + "-BuBu." + imageFormat;
 
-        Map map = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
+        Map bubuMap = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
+        Map astarMap = bubuMap.clone();
+
+
 
         StopWatch.stopTimer();
 
-        width = pathFinder.getMapWidth(map.getGrid());
-        heigth = pathFinder.getMapHeigth(map.getGrid());
+        width = pathFinder.getMapWidth(bubuMap.getGrid());
+        heigth = pathFinder.getMapHeigth(bubuMap.getGrid());
 
         System.out.println("Generated maze of " + width + " x " + heigth + " in " + StopWatch.getDuration() + " milliseconds");
 
@@ -59,13 +62,13 @@ public class Main {
 
                 System.out.println("Finding path using BuBu Algorithm....");
                 StopWatch.startTimer();
-                path = pathFinder.findPath(map, false);
+                path = pathFinder.findPath(bubuMap, false);
                 StopWatch.stopTimer();
                 System.out.println("Found path in " + StopWatch.getDuration() + " milliseconds, " + path.size() + " steps");
 
                 if (true) {
                     System.out.println("Saving image...." + filenameBuBu);
-                    pathFinder.saveMapImage(map,
+                    pathFinder.saveMapImage(bubuMap,
                             path,
                             filenameBuBu,
                             resizeFactor,
@@ -83,13 +86,13 @@ public class Main {
                 AStarPathFinder aStarPathFinder = new AStarPathFinder();
                 StopWatch.startTimer();
                 AStarResponse aStarResponse = new AStarResponse();
-                aStarResponse = aStarPathFinder.findPath(map);
+                aStarResponse = aStarPathFinder.findPath(astarMap);
                 StopWatch.stopTimer();
                 System.out.println("Found path in " + StopWatch.getDuration() + " milliseconds, " + aStarResponse.getPath().size() + " steps");
 
                 if (true) {
                     System.out.println("Saving image...." + filenameAStar);
-                    aStarPathFinder.saveMapImage(map,
+                    aStarPathFinder.saveMapImage(astarMap,
                             aStarResponse.getPath(),
                             filenameAStar,
                             resizeFactor,

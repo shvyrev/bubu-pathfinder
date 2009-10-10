@@ -8,7 +8,7 @@ package bubu.pathfinder.beans;
  *
  * @author Reuben
  */
-public class Map {
+public class Map implements Cloneable {
 
     int[][] grid;
     Coordinate startLocation;
@@ -40,4 +40,13 @@ public class Map {
     public void setStartLocation(Coordinate startLocation) {
         this.startLocation = startLocation;
     }
+
+    public Map clone() {
+        try {
+            return (Map) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
+    }
+
 }

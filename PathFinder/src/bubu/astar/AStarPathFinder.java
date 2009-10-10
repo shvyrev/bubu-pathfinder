@@ -323,26 +323,22 @@ public class AStarPathFinder {
 
         // start point marker
         for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-
             for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
                 raster.setPixel(
                         (map.getStartLocation().getX() * resizeFactor) + rasterX,
                         imageHeigth - 1 - ((map.getStartLocation().getY() * resizeFactor) + rasterY),
                         startPontMarkerColour);
             }
-
         }
 
         // end point marker
         for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-
             for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
                 raster.setPixel(
                         (map.getEndLocation().getX() * resizeFactor) + rasterX,
                         imageHeigth - 1 - ((map.getEndLocation().getY() * resizeFactor) + rasterY),
                         endPointMarkerColour);
             }
-
         }
 
         int counter = 0;
@@ -403,7 +399,7 @@ public class AStarPathFinder {
 
         }
         try {
-            ImageIO.write(image, imageFormat.toUpperCase(), new File(filename.replace("." + imageFormat, "-palette." + imageFormat)));
+            ImageIO.write(image, imageFormat.toUpperCase(), new File(filename.replace("." + imageFormat, "-Palette." + imageFormat)));
         } catch (IOException ex) {
             ex.printStackTrace();
         }

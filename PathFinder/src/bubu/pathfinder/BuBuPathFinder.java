@@ -256,7 +256,7 @@ public class BuBuPathFinder {
 
         }
         try {
-            ImageIO.write(image, imageFormat.toUpperCase(), new File(filename.replace("." + imageFormat, "-palette." + imageFormat)));
+            ImageIO.write(image, imageFormat.toUpperCase(), new File(filename.replace("." + imageFormat, "-Palette." + imageFormat)));
         } catch (IOException ex) {
             ex.printStackTrace();
         }

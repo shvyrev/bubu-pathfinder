@@ -24,19 +24,22 @@ public class Main {
 
 
 
-        int width = 1500;
-        int heigth = 1500;
+        int width = 1900 / 2;
+        int heigth = 950 / 2;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
         int lineMaximumLength = (int) (lineMinimumLength * 1.5);
         double complexity = 0.5;
 
-        int resizeFactor = 4;
+        int resizeFactor = 1;
 
-        String imageFormat = "bmp";
+        String imageFormat = "png";
 
-        String filename = "C:\\Maze-" + width + "x" + heigth + "-" + linearFactor + "-" + horizontalVerticalBias + "-" + lineMinimumLength + "-" + lineMaximumLength + "-" + complexity + "-" + resizeFactor + "." + imageFormat;
+        String filename = "C:\\Maze-" + width + "x" + heigth + "-" + linearFactor + "-" + horizontalVerticalBias + "-" + lineMinimumLength + "-" + lineMaximumLength + "-" + complexity + "-" + resizeFactor;
+
+        String filenameAStar = filename + "-AStar." + imageFormat;
+        String filenameBuBu = filename + "-BuBu." + imageFormat;
 
 
 
@@ -48,6 +51,8 @@ public class Main {
         heigth = pathFinder.getMapHeigth(map.getGrid());
 
         System.out.println("Generated maze of " + width + " x " + heigth + " in " + (endTime - startTime) + " milliseconds");
+
+        boolean loadImage = false;
 
         try {
 
@@ -62,14 +67,16 @@ public class Main {
                 endTime = System.currentTimeMillis();
                 System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + path.size() + " steps");
 
-//                System.out.println("Saving image...." + filename);
-//
-//                pathFinder.saveMapImage(map,
-//                        path,
-//                        filename,
-//                        resizeFactor,
-//                        true,
-//                        imageFormat);
+                if (true) {
+                    System.out.println("Saving image...." + filename);
+                    pathFinder.saveMapImage(map,
+                            path,
+                            filenameBuBu,
+                            resizeFactor,
+                            true,
+                            imageFormat);
+                    loadImage = true;
+                }
             }
 
 
@@ -84,18 +91,23 @@ public class Main {
                 System.out.println("Found path in " + (endTime - startTime) + " milliseconds, " + aStarResponse.getPath().size() + " steps");
 
 
-//                System.out.println("Saving image...." + filename);
-//
-//                aStarPathFinder.saveMapImage(map,
-//                        aStarResponse.getPath(),
-//                        filename,
-//                        resizeFactor,
-//                        true,
-//                        imageFormat,
-//                        aStarResponse.getMaxCost());
+                if (true) {
+                    System.out.println("Saving image...." + filename);
+                    aStarPathFinder.saveMapImage(map,
+                            aStarResponse.getPath(),
+                            filenameAStar,
+                            resizeFactor,
+                            true,
+                            imageFormat,
+                            aStarResponse.getMaxCost());
+                    loadImage = true;
+                }
             }
 
-//            Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filename);
+            if (loadImage) {
+                Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filenameBuBu);
+                Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filenameAStar);
+            }
 
         } catch (CannotFindPathException ex) {
             ex.printStackTrace();

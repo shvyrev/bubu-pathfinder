@@ -22,8 +22,8 @@ public class Main {
 
         StopWatch.startTimer();
 
-        int width = 3000 / 2;
-        int heigth = 3000 / 2;
+        int width = 1850 / 2;
+        int heigth = 950 / 2;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;

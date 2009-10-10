@@ -273,17 +273,15 @@ public class AStarPathFinder {
         for (int y = 0; y < mapHeigth; y++) {
 
             for (int x = 0; x < mapWidth; x++) {
-
-                // draw walls
+                
                 if (map.getGrid()[x][y] == -2) {
-
-                    for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-                        for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
-                            int rasterCoordX = (x * resizeFactor) + rasterX;
-                            int rasterCoordY = imageHeigth - 1 - ((y * resizeFactor) + rasterY);
-                            raster.setPixel(rasterCoordX, rasterCoordY, wallColour);
-                        }
-                    }
+                    // wall
+                    raster.setPixels(
+                            x * resizeFactor,
+                            imageHeigth - 1 - (y * resizeFactor),
+                            resizeFactor,
+                            resizeFactor,
+                            wallColour);
 
                 } else {
 
@@ -292,27 +290,26 @@ public class AStarPathFinder {
                     int palettePosition = (int) ((double) distanceProgressionPercentage * (double) palette.length) - 1;
 
                     palettePosition = palettePosition < 0 ? 0 : palettePosition;
-                    palettePosition = palettePosition >=  palette.length ? palettePosition = palette.length - 1 : palettePosition;
+                    palettePosition = palettePosition >= palette.length ? palettePosition = palette.length - 1 : palettePosition;
 
                     int[] paletteColour = PaletteTools.intToRgb(palette[palettePosition]);
 
-                    for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-                        for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
-                            if (!drawDeadEnds || map.getGrid()[x][y] <= 0) {
-                                // unvisited
-                                int rasterCoordX = (x * resizeFactor) + rasterX;
-                                int rasterCoordY = imageHeigth - 1 - ((y * resizeFactor) + rasterY);
-                                raster.setPixel(rasterCoordX, rasterCoordY, unvisitedSpaceColour);
-
-                            } else {
-                                // visited
-                                if (map.getGrid()[x][y] > 0) {
-                                    int rasterCoordX = (x * resizeFactor) + rasterX;
-                                    int rasterCoordY = imageHeigth - 1 - ((y * resizeFactor) + rasterY);
-                                    raster.setPixel(rasterCoordX, rasterCoordY, paletteColour);
-                                }
-                            }
-                        }
+                    if (!drawDeadEnds || map.getGrid()[x][y] <= 0) {
+                        // unvisited
+                        raster.setPixels(
+                                x * resizeFactor,
+                                imageHeigth - 1 - (y * resizeFactor),
+                                resizeFactor,
+                                resizeFactor,
+                                unvisitedSpaceColour);
+                    } else {
+                        // visited
+                        raster.setPixels(
+                                x * resizeFactor,
+                                imageHeigth - 1 - (y * resizeFactor),
+                                resizeFactor,
+                                resizeFactor,
+                                paletteColour);
                     }
 
                 }
@@ -322,24 +319,20 @@ public class AStarPathFinder {
         }
 
         // start point marker
-        for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-            for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
-                raster.setPixel(
-                        (map.getStartLocation().getX() * resizeFactor) + rasterX,
-                        imageHeigth - 1 - ((map.getStartLocation().getY() * resizeFactor) + rasterY),
-                        startPontMarkerColour);
-            }
-        }
+        raster.setPixels(
+                map.getStartLocation().getX() * resizeFactor,
+                imageHeigth - 1 - (map.getStartLocation().getY() * resizeFactor),
+                resizeFactor,
+                resizeFactor,
+                startPontMarkerColour);
 
         // end point marker
-        for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-            for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
-                raster.setPixel(
-                        (map.getEndLocation().getX() * resizeFactor) + rasterX,
-                        imageHeigth - 1 - ((map.getEndLocation().getY() * resizeFactor) + rasterY),
-                        endPointMarkerColour);
-            }
-        }
+        raster.setPixels(
+                map.getStartLocation().getX() * resizeFactor,
+                imageHeigth - 1 - (map.getStartLocation().getY() * resizeFactor),
+                resizeFactor,
+                resizeFactor,
+                endPointMarkerColour);
 
         int counter = 0;
 
@@ -353,30 +346,24 @@ public class AStarPathFinder {
                 Math.abs((int) (((counter / 5) % 510) - 255))
             };
 
-            if (counter % 40 > 38) {
-                pathColour = new int[]{255, 255, 255};
-            } else {
+            if (counter % 3 == 0) {
                 pathColour = new int[]{255, 0, 0};
+            } else if (counter % 3 == 1) {
+                pathColour = new int[]{0, 255, 0};
+            } else if (counter % 3 == 2) {
+                pathColour = new int[]{0, 0, 255};
             }
 
-
-            for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-
-                for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
-
-                    raster.setPixel(
-                            (currentCoordinate.getX() * resizeFactor) + rasterX,
-                            imageHeigth - 1 - ((currentCoordinate.getY() * resizeFactor) + rasterY),
-                            pathColour);
-
-                }
-
-            }
+            raster.setPixels(
+                    currentCoordinate.getX()  * resizeFactor,
+                    imageHeigth - 1 - (currentCoordinate.getY() * resizeFactor),
+                    resizeFactor,
+                    resizeFactor,
+                    pathColour);
 
         }
 
         ImageIO.write(image, fileFormat.toUpperCase(), new File(filename));
-
         savePaletteImage(palette, 30, filename, fileFormat);
 
     }
@@ -406,8 +393,4 @@ public class AStarPathFinder {
 
 
     }
-
-    
-
-    
 }

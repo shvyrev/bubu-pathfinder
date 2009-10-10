@@ -22,15 +22,15 @@ public class Main {
 
         StopWatch.startTimer();
 
-        int width = 1350 / 2;
-        int heigth = 850 / 2;
+        int width = 1350 / 4;
+        int heigth = 850 / 4;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
         int lineMaximumLength = (int) (lineMinimumLength * 1.5);
-        double complexity = 0.1;
+        double complexity = 0.3;
 
-        int resizeFactor = 1;
+        int resizeFactor = 2;
 
         String imageFormat = "bmp";
         String filename = "C:\\Maze-" + width + "x" + heigth + "-" + linearFactor + "-" + horizontalVerticalBias + "-" + lineMinimumLength + "-" + lineMaximumLength + "-" + complexity + "-" + resizeFactor;
@@ -39,8 +39,6 @@ public class Main {
 
         Map bubuMap = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
         Map astarMap = bubuMap.clone();
-
-
 
         StopWatch.stopTimer();
 
@@ -52,15 +50,12 @@ public class Main {
         boolean loadImageBuBu = false;
         boolean loadImageAStar = false;
 
-        ArrayList<Integer[]> deadEndPaletteRoute = PaletteTools.generateRandomPaletteRoute();
+        ArrayList<Integer[]> deadEndPaletteRoute = PaletteTools.generateRandomPaletteRoute(3, true);
 
         ArrayList<Integer[]> pathPaletteRoute = new ArrayList<Integer[]>();
-        pathPaletteRoute.add(new Integer[]{255, 255, 255});
-        pathPaletteRoute.add(new Integer[]{255, 255, 0});
-        pathPaletteRoute.add(new Integer[]{255, 255, 255});
-        pathPaletteRoute.add(new Integer[]{0, 255, 255});
-        pathPaletteRoute.add(new Integer[]{255, 255, 255});
-        pathPaletteRoute.add(new Integer[]{255, 0, 255});
+        pathPaletteRoute.add(new Integer[]{0, 0, 255});
+        pathPaletteRoute.add(new Integer[]{128, 128, 128});
+        pathPaletteRoute.add(new Integer[]{0, 0, 255});
 
 
         try {
@@ -85,7 +80,7 @@ public class Main {
                             imageFormat,
                             deadEndPaletteRoute,
                             pathPaletteRoute);
-                    
+
                     loadImageBuBu = true;
                 }
             }
@@ -112,16 +107,20 @@ public class Main {
                             aStarResponse.getMaxCost(),
                             deadEndPaletteRoute,
                             pathPaletteRoute);
-                    
+
                     loadImageAStar = true;
                 }
             }
 
-            if (loadImageBuBu) {
-                Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filenameBuBu);
-            }
-            if (loadImageAStar) {
-                Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filenameAStar);
+            if (false) {
+
+                if (loadImageBuBu) {
+                    Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filenameBuBu);
+                }
+                if (loadImageAStar) {
+                    Runtime.getRuntime().exec("rundll32.exe C:\\WINDOWS\\System32\\shimgvw.dll,ImageView_Fullscreen " + filenameAStar);
+                }
+
             }
 
 

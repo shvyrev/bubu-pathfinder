@@ -12,38 +12,16 @@ import java.util.ArrayList;
  */
 public class PaletteTools {
 
-    public static ArrayList<Integer[]> generateRandomPaletteRoute() {
+    public static ArrayList<Integer[]> generateRandomPaletteRoute(int numberOfRandomColours, boolean blackAlternation) {
 
         ArrayList<Integer[]> paletteRoute = new ArrayList<Integer[]>();
 
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{0, 0, 0});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{100, 100, 100});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{0, 0, 0});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{100, 100, 100});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{0, 0, 0});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{100, 100, 100});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{0, 0, 0});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{100, 100, 100});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{0, 0, 0});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{100, 100, 100});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{0, 0, 0});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{100, 100, 100});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{0, 0, 0});
-        paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
-        paletteRoute.add(new Integer[]{100, 100, 100});
+        for (int i = 1; i <= numberOfRandomColours; i++) {
+            paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
+            if (blackAlternation) {
+                paletteRoute.add(new Integer[]{0, 0, 0});
+            }
+        }
 
         return paletteRoute;
 
@@ -129,5 +107,23 @@ public class PaletteTools {
         rgb[2] = ((int) ((double) number / (double) (256 * 256))) % 256;
 
         return rgb;
+    }
+
+    public static int[] expandPixelColour(int[] colour, int resizeFactor) {
+
+        int[] paletteColour = new int[(int) Math.pow(resizeFactor, 2) * 3];
+        for (int i = 0; i < paletteColour.length; i++) {
+            if (i % 3 == 0) {
+                paletteColour[i] = colour[0];
+            } else if (i % 3 == 1) {
+                paletteColour[i] = colour[1];
+            } else if (i % 3 == 2) {
+                paletteColour[i] = colour[2];
+            }
+        }
+
+        return paletteColour;
+
+
     }
 }

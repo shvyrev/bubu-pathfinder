@@ -88,7 +88,7 @@ public class BuBuPathFinder {
 
     }
 
-    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, ArrayList<Integer[]> deadEndPaletteRoute, ArrayList<Integer[]> pathPaletteRoute) throws IOException {
+    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, ArrayList<Integer[]> deadEndPaletteRoute, ArrayList<Integer[]> pathPaletteRoute) throws IOException, Exception {
 
         int[] deadEndPalette;
 
@@ -100,15 +100,16 @@ public class BuBuPathFinder {
         int imageWidth = mapWidth * resizeFactor;
         int imageHeigth = mapHeigth * resizeFactor;
 
+        System.out.println("Image Dimensions : " + imageWidth + "x" + imageHeigth);
+
         BufferedImage image = new BufferedImage(imageWidth, imageHeigth, BufferedImage.TYPE_INT_RGB);
 
         WritableRaster raster = image.getRaster();
 
-        int[] endPointMarkerColour = new int[]{255, 0, 0};
-        int[] startPontMarkerColour = new int[]{0, 255, 0};
-
-        int[] wallColour = new int[]{0, 0, 0};
-        int[] unvisitedSpaceColour = new int[]{255, 255, 255};
+        int[] endPointMarkerColour = PaletteTools.expandPixelColour(new int[]{255, 0, 0}, resizeFactor);
+        int[] startPontMarkerColour = PaletteTools.expandPixelColour(new int[]{0, 255, 0}, resizeFactor);
+        int[] wallColour = PaletteTools.expandPixelColour(new int[]{0, 0, 0}, resizeFactor);
+        int[] unvisitedSpaceColour = PaletteTools.expandPixelColour(new int[]{255, 255, 255}, resizeFactor);
 
         int pathSize = path.size();
 
@@ -120,7 +121,7 @@ public class BuBuPathFinder {
                     // wall
                     raster.setPixels(
                             x * resizeFactor,
-                            imageHeigth - 1 - (y * resizeFactor),
+                            imageHeigth - resizeFactor -  (y * resizeFactor),
                             resizeFactor,
                             resizeFactor,
                             wallColour);
@@ -134,21 +135,26 @@ public class BuBuPathFinder {
                     palettePosition = palettePosition < 0 ? 0 : palettePosition;
                     palettePosition = palettePosition >= deadEndPalette.length ? palettePosition = deadEndPalette.length - 1 : palettePosition;
 
-                    int[] paletteColour = PaletteTools.intToRgb(deadEndPalette[palettePosition]);
+                    int[] paletteColour = PaletteTools.expandPixelColour(PaletteTools.intToRgb(deadEndPalette[palettePosition]), resizeFactor);
 
                     if (!drawDeadEnds || map.getGrid()[x][y] <= 0) {
                         // unvisited
+                        try {
                         raster.setPixels(
                                 x * resizeFactor,
-                                imageHeigth - 1 - (y * resizeFactor),
+                                imageHeigth - resizeFactor - (y * resizeFactor),
                                 resizeFactor,
                                 resizeFactor,
                                 unvisitedSpaceColour);
+                        } catch (Exception e) {
+                            System.out.println((x * resizeFactor) + " " + (imageHeigth - 1 - resizeFactor - (y * resizeFactor)));
+                            throw e;
+                        }
                     } else {
                         // visited
                         raster.setPixels(
                                 x * resizeFactor,
-                                imageHeigth - 1 - (y * resizeFactor),
+                                imageHeigth - resizeFactor -  (y * resizeFactor),
                                 resizeFactor,
                                 resizeFactor,
                                 paletteColour);
@@ -163,7 +169,7 @@ public class BuBuPathFinder {
         // start point marker
         raster.setPixels(
                 map.getStartLocation().getX() * resizeFactor,
-                imageHeigth - 1 - (map.getStartLocation().getY() * resizeFactor),
+                imageHeigth - resizeFactor - (map.getStartLocation().getY() * resizeFactor),
                 resizeFactor,
                 resizeFactor,
                 startPontMarkerColour);
@@ -171,7 +177,7 @@ public class BuBuPathFinder {
         // end point marker
         raster.setPixels(
                 map.getStartLocation().getX() * resizeFactor,
-                imageHeigth - 1 - (map.getStartLocation().getY() * resizeFactor),
+                imageHeigth - resizeFactor - (map.getStartLocation().getY() * resizeFactor),
                 resizeFactor,
                 resizeFactor,
                 endPointMarkerColour);
@@ -184,11 +190,11 @@ public class BuBuPathFinder {
 
             counter++;
 
-            int[] pathColour = PaletteTools.intToRgb(pathPalette[counter % pathPalette.length]);
+            int[] pathColour = PaletteTools.expandPixelColour(PaletteTools.intToRgb(pathPalette[counter % pathPalette.length]), resizeFactor);
 
             raster.setPixels(
                     currentCoordinate.getX() * resizeFactor,
-                    imageHeigth - 1 - (currentCoordinate.getY() * resizeFactor),
+                    imageHeigth - resizeFactor - (currentCoordinate.getY() * resizeFactor),
                     resizeFactor,
                     resizeFactor,
                     pathColour);
@@ -199,6 +205,8 @@ public class BuBuPathFinder {
         savePaletteImage(deadEndPalette, 30, filename, fileFormat);
 
     }
+
+    
 
     private void savePaletteImage(int palette[], int paletteImageHeigth, String filename, String imageFormat) {
 

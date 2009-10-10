@@ -265,10 +265,10 @@ public class AStarPathFinder {
 
         WritableRaster raster = image.getRaster();
 
-        int[] endPointMarkerColour = new int[]{255, 0, 0};
-        int[] startPontMarkerColour = new int[]{0, 255, 0};
-        int[] wallColour = new int[]{0, 0, 0};
-        int[] unvisitedSpaceColour = new int[]{255, 255, 255};
+        int[] endPointMarkerColour = PaletteTools.expandPixelColour(new int[]{255, 0, 0}, resizeFactor);
+        int[] startPontMarkerColour = PaletteTools.expandPixelColour(new int[]{0, 255, 0}, resizeFactor);
+        int[] wallColour = PaletteTools.expandPixelColour(new int[]{0, 0, 0}, resizeFactor);
+        int[] unvisitedSpaceColour = PaletteTools.expandPixelColour(new int[]{255, 255, 255}, resizeFactor);
 
         for (int y = 0; y < mapHeigth; y++) {
 
@@ -278,7 +278,7 @@ public class AStarPathFinder {
                     // wall
                     raster.setPixels(
                             x * resizeFactor,
-                            imageHeigth - 1 - (y * resizeFactor),
+                            imageHeigth - resizeFactor - (y * resizeFactor),
                             resizeFactor,
                             resizeFactor,
                             wallColour);
@@ -292,13 +292,13 @@ public class AStarPathFinder {
                     palettePosition = palettePosition < 0 ? 0 : palettePosition;
                     palettePosition = palettePosition >= deadEndPalette.length ? palettePosition = deadEndPalette.length - 1 : palettePosition;
 
-                    int[] deadEndColour = PaletteTools.intToRgb(deadEndPalette[palettePosition]);
+                    int[] deadEndColour = PaletteTools.expandPixelColour(PaletteTools.intToRgb(deadEndPalette[palettePosition]), resizeFactor);
 
                     if (!drawDeadEnds || map.getGrid()[x][y] <= 0) {
                         // unvisited
                         raster.setPixels(
                                 x * resizeFactor,
-                                imageHeigth - 1 - (y * resizeFactor),
+                                imageHeigth - resizeFactor - (y * resizeFactor),
                                 resizeFactor,
                                 resizeFactor,
                                 unvisitedSpaceColour);
@@ -306,7 +306,7 @@ public class AStarPathFinder {
                         // visited
                         raster.setPixels(
                                 x * resizeFactor,
-                                imageHeigth - 1 - (y * resizeFactor),
+                                imageHeigth - resizeFactor - (y * resizeFactor),
                                 resizeFactor,
                                 resizeFactor,
                                 deadEndColour);
@@ -323,7 +323,7 @@ public class AStarPathFinder {
         // start point marker
         raster.setPixels(
                 map.getStartLocation().getX() * resizeFactor,
-                imageHeigth - 1 - (map.getStartLocation().getY() * resizeFactor),
+                imageHeigth - resizeFactor - (map.getStartLocation().getY() * resizeFactor),
                 resizeFactor,
                 resizeFactor,
                 startPontMarkerColour);
@@ -331,7 +331,7 @@ public class AStarPathFinder {
         // end point marker
         raster.setPixels(
                 map.getStartLocation().getX() * resizeFactor,
-                imageHeigth - 1 - (map.getStartLocation().getY() * resizeFactor),
+                imageHeigth - resizeFactor - (map.getStartLocation().getY() * resizeFactor),
                 resizeFactor,
                 resizeFactor,
                 endPointMarkerColour);
@@ -344,11 +344,11 @@ public class AStarPathFinder {
 
             counter++;
 
-            int[] pathColour = PaletteTools.intToRgb(pathPalette[counter % pathPalette.length]);
+            int[] pathColour = PaletteTools.expandPixelColour(PaletteTools.intToRgb(pathPalette[counter % pathPalette.length]),resizeFactor);
 
             raster.setPixels(
                     currentCoordinate.getX() * resizeFactor,
-                    imageHeigth - 1 - (currentCoordinate.getY() * resizeFactor),
+                    imageHeigth - resizeFactor - (currentCoordinate.getY() * resizeFactor),
                     resizeFactor,
                     resizeFactor,
                     pathColour);

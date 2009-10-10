@@ -1,5 +1,6 @@
 package bubu.pathfinder;
 
+import bubu.palette.PaletteTools;
 import bubu.pathfinder.beans.Map;
 import bubu.pathfinder.beans.Coordinate;
 import bubu.pathfinder.exception.CannotFindPathException;
@@ -12,7 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.imageio.ImageIO;
 
-public class PathFinder {
+public class BuBuPathFinder {
 
     private final String START_MARKER = "A";
     private final String END_MARKER = "B";
@@ -87,7 +88,11 @@ public class PathFinder {
 
     }
 
-    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat) throws IOException {
+    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, ArrayList<Integer[]> paletteRoute) throws IOException {
+
+        int[] palette;
+
+        palette = PaletteTools.generatePalette(paletteRoute);
 
         int mapWidth = getMapWidth(map.getGrid());
         int mapHeigth = getMapHeigth(map.getGrid());
@@ -99,12 +104,11 @@ public class PathFinder {
 
         WritableRaster raster = image.getRaster();
 
-        int[] red = new int[]{255, 0, 0};
-        int[] green = new int[]{0, 255, 0};
-        int[] blue = new int[]{0, 0, 255};
-        int[] yellow = new int[]{255, 255, 0};
-        int[] black = new int[]{0, 0, 0};
-        int[] white = new int[]{255, 255, 255};
+        int[] endPointMarkerColour = new int[]{255, 0, 0};
+        int[] startPontMarkerColour = new int[]{0, 255, 0};
+
+        int[] wallColour = new int[]{0, 0, 0};
+        int[] unvisitedSpaceColour = new int[]{255, 255, 255};
 
         int pathSize = path.size();
 
@@ -113,45 +117,47 @@ public class PathFinder {
             for (int x = 0; x < mapWidth; x++) {
 
                 if (map.getGrid()[x][y] == -2) {
-
+                    // wall
                     for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-
                         for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
-                            raster.setPixel(
-                                    (x * resizeFactor) + rasterX,
-                                    imageHeigth - 1 - ((y * resizeFactor) + rasterY),
-                                    black);
+                            int rasterCoordX = (x * resizeFactor) + rasterX;
+                            int rasterCoordY = imageHeigth - 1 - ((y * resizeFactor) + rasterY);
+                            raster.setPixel(rasterCoordX, rasterCoordY, wallColour);
                         }
-
                     }
 
                 } else {
 
+                    double distanceProgressionPercentage = (double) map.getGrid()[x][y] / (double) pathSize;
+
+                    int palettePosition = (int) ((double) distanceProgressionPercentage * (double) palette.length) - 1;
+
+                    palettePosition = palettePosition < 0 ? 0 : palettePosition;
+                    palettePosition = palettePosition >= palette.length ? palettePosition = palette.length - 1 : palettePosition;
+
+                    int[] paletteColour = PaletteTools.intToRgb(palette[palettePosition]);
+
                     for (int rasterY = 0; rasterY < resizeFactor; rasterY++) {
-
                         for (int rasterX = 0; rasterX < resizeFactor; rasterX++) {
-
                             if (!drawDeadEnds || map.getGrid()[x][y] <= 0) {
-
-                                raster.setPixel(
-                                        (x * resizeFactor) + rasterX,
-                                        imageHeigth - 1 - ((y * resizeFactor) + rasterY),
-                                        white);
+                                // unvisited
+                                int rasterCoordX = (x * resizeFactor) + rasterX;
+                                int rasterCoordY = imageHeigth - 1 - ((y * resizeFactor) + rasterY);
+                                raster.setPixel(rasterCoordX, rasterCoordY, unvisitedSpaceColour);
                             } else {
-
-                                int colourVariance = 55;
-
-                                int colour1 = 255 - ((int) (((double) map.getGrid()[x][y] / (double) pathSize) * 200));
-                                int colour2 = (255 - colourVariance) + Math.abs(((int) ((double) map.getGrid()[x][y] / (double) 10) % (colourVariance * 4)) - (colourVariance * 2)) - (colourVariance);
-                                int colour3 = ((int) (((double) map.getGrid()[x][y] / (double) pathSize) * 255));
-
-                                int[] deadEndColour = new int[]{colour1, colour2, colour3};
+                                // visited
+//                                int colourVariance = 55;
+//
+//                                int colour1 = 255 - ((int) (((double) map.getGrid()[x][y] / (double) pathSize) * 200));
+//                                int colour2 = (255 - colourVariance) + Math.abs(((int) ((double) map.getGrid()[x][y] / (double) 10) % (colourVariance * 4)) - (colourVariance * 2)) - (colourVariance);
+//                                int colour3 = ((int) (((double) map.getGrid()[x][y] / (double) pathSize) * 255));
+//
+//                                int[] deadEndColour = new int[]{colour1, colour2, colour3};
 
                                 if (map.getGrid()[x][y] > 0) {
-                                    raster.setPixel(
-                                            (x * resizeFactor) + rasterX,
-                                            imageHeigth - 1 - ((y * resizeFactor) + rasterY),
-                                            deadEndColour);
+                                    int rasterCoordX = (x * resizeFactor) + rasterX;
+                                    int rasterCoordY = imageHeigth - 1 - ((y * resizeFactor) + rasterY);
+                                    raster.setPixel(rasterCoordX, rasterCoordY, paletteColour);
 
                                 }
 
@@ -173,7 +179,7 @@ public class PathFinder {
                 raster.setPixel(
                         (map.getStartLocation().getX() * resizeFactor) + rasterX,
                         imageHeigth - 1 - ((map.getStartLocation().getY() * resizeFactor) + rasterY),
-                        green);
+                        startPontMarkerColour);
             }
 
         }
@@ -184,7 +190,7 @@ public class PathFinder {
                 raster.setPixel(
                         (map.getEndLocation().getX() * resizeFactor) + rasterX,
                         imageHeigth - 1 - ((map.getEndLocation().getY() * resizeFactor) + rasterY),
-                        red);
+                        endPointMarkerColour);
             }
 
         }
@@ -228,7 +234,36 @@ public class PathFinder {
 
         ImageIO.write(image, fileFormat.toUpperCase(), new File(filename));
 
+        savePaletteImage(palette, 30, filename, fileFormat);
+
     }
+
+        private void savePaletteImage(int palette[], int paletteImageHeigth, String filename, String imageFormat) {
+
+        int paletteLength = palette.length;
+
+        BufferedImage image = new BufferedImage(paletteLength, paletteImageHeigth, BufferedImage.TYPE_INT_RGB);
+
+        WritableRaster raster = image.getRaster();
+
+        for (int y = 0; y < paletteImageHeigth; y++) {
+
+            for (int x = 0; x < paletteLength; x++) {
+
+                raster.setPixel(x, y, PaletteTools.intToRgb(palette[x]));
+
+            }
+
+        }
+        try {
+            ImageIO.write(image, imageFormat.toUpperCase(), new File(filename.replace("." + imageFormat, "-palette." + imageFormat)));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+
+    }
+
 
     public void drawMap(Map map, ArrayList<Coordinate> path) {
 
@@ -446,7 +481,7 @@ public class PathFinder {
                     }
                 }
             }
-            
+
         }
 
         return coords;

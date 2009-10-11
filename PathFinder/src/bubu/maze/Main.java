@@ -22,15 +22,16 @@ public class Main {
 
         StopWatch.startTimer();
 
-        int width = 1350 / 4;
-        int heigth = 850 / 4;
+        int width = 6000 / 2;
+        int heigth = 6000 / 2;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
         int lineMaximumLength = (int) (lineMinimumLength * 1.5);
-        double complexity = 0.3;
+        double complexity = 0.5;
+        boolean saveImages = false;
 
-        int resizeFactor = 2;
+        int resizeFactor = 1;
 
         String imageFormat = "bmp";
         String filename = "C:\\Maze-" + width + "x" + heigth + "-" + linearFactor + "-" + horizontalVerticalBias + "-" + lineMinimumLength + "-" + lineMaximumLength + "-" + complexity + "-" + resizeFactor;
@@ -70,7 +71,7 @@ public class Main {
                 StopWatch.stopTimer();
                 System.out.println("Found path in " + StopWatch.getDuration() + " milliseconds, " + path.size() + " steps");
 
-                if (true) {
+                if (true && saveImages) {
                     System.out.println("Saving image...." + filenameBuBu);
                     pathFinder.saveMapImage(bubuMap,
                             path,
@@ -85,6 +86,7 @@ public class Main {
                 }
             }
 
+            bubuMap = null;
 
             if (true) {
 
@@ -96,7 +98,7 @@ public class Main {
                 StopWatch.stopTimer();
                 System.out.println("Found path in " + StopWatch.getDuration() + " milliseconds, " + aStarResponse.getPath().size() + " steps");
 
-                if (true) {
+                if (true && saveImages) {
                     System.out.println("Saving image...." + filenameAStar);
                     aStarPathFinder.saveMapImage(astarMap,
                             aStarResponse.getPath(),

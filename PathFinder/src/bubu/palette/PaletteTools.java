@@ -1,15 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package bubu.palette;
 
 import java.util.ArrayList;
 
-/**
- *
- * @author Reuben
- */
 public class PaletteTools {
 
     public static ArrayList<Integer[]> generateRandomPaletteRoute(int numberOfRandomColours, boolean blackAlternation) {

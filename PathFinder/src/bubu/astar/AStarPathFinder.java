@@ -196,14 +196,12 @@ public class AStarPathFinder {
                     pathX = tempx;
                     pathLength++;
 
-                    response.getPath().add(new Coordinate(pathX, pathY));
-
                     if (pathX == map.getStartLocation().getX() && pathY == map.getStartLocation().getY()) {
                         break;
+                    } else {
+                        response.getPath().add(new Coordinate(pathX, pathY));
                     }
                 }
-
-                System.out.println("Path found. " + pathLength + " steps.");
                 keepLooping = false;
 
             }

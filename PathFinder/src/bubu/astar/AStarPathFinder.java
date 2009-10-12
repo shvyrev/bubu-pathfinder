@@ -112,16 +112,18 @@ public class AStarPathFinder {
                                             addedGcost = 10;
                                         }
                                         gCost[a][b] = gCost[parentXVal][parentYVal] + addedGcost;
+                                        //hCost[openList[m]] = (int)(10 * Math.pow((Math.pow(Math.abs(a - map.getEndLocation().getX()),2) + Math.pow(Math.abs(b - map.getEndLocation().getY()),2)),0.5));
                                         hCost[openList[m]] = 10 * (Math.abs(a - map.getEndLocation().getX()) + Math.abs(b - map.getEndLocation().getY()));
                                         fCost[openList[m]] = gCost[a][b] + hCost[openList[m]];
                                         parentX[a][b] = parentXVal;
                                         parentY[a][b] = parentYVal;
 
                                         while (m != 1) {
-                                            if (fCost[openList[m]] < fCost[openList[m / 2]]) {
+                                            if (fCost[openList[m]] <= fCost[openList[m / 2]]) {
                                                 temp = openList[m / 2];
                                                 openList[m / 2] = openList[m];
                                                 openList[m] = temp;
+                                                m=m/2;
                                             } else {
                                                 break;
                                             }
@@ -166,6 +168,10 @@ public class AStarPathFinder {
 
 
                                     map.getGrid()[a][b] = map.getGrid()[parentXVal][parentYVal] + 1;
+
+                                    if (map.getGrid()[a][b] <= 0) {
+                                        map.getGrid()[a][b] = 1;
+                                    }
 
                                     if (map.getGrid()[a][b] > response.getMaxCost()) {
                                         response.setMaxCost(map.getGrid()[a][b]);
@@ -247,7 +253,7 @@ public class AStarPathFinder {
 
     }
 
-    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, int maxCost, ArrayList<Integer[]> deadEndPaletteRoute, ArrayList<Integer[]> pathPaletteRoute) throws IOException {
+    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, int maxCost, ArrayList<Integer[]> deadEndPaletteRoute, ArrayList<Integer[]> pathPaletteRoute, boolean savePalette) throws IOException {
 
         int[] deadEndPalette;
 
@@ -342,7 +348,7 @@ public class AStarPathFinder {
 
             counter++;
 
-            int[] pathColour = PaletteTools.expandPixelColour(PaletteTools.intToRgb(pathPalette[counter % pathPalette.length]),resizeFactor);
+            int[] pathColour = PaletteTools.expandPixelColour(PaletteTools.intToRgb(pathPalette[counter % pathPalette.length]), resizeFactor);
 
             raster.setPixels(
                     currentCoordinate.getX() * resizeFactor,
@@ -354,7 +360,9 @@ public class AStarPathFinder {
         }
 
         ImageIO.write(image, fileFormat.toUpperCase(), new File(filename));
-        savePaletteImage(deadEndPalette, 30, filename, fileFormat);
+        if (savePalette) {
+            savePaletteImage(deadEndPalette, 30, filename, fileFormat);
+        }
 
     }
 

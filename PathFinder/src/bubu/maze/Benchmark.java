@@ -3,6 +3,7 @@ package bubu.maze;
 import bubu.astar.AStarPathFinder;
 import bubu.astar.AStarResponse;
 import bubu.pathfinder.BuBuPathFinder;
+import bubu.pathfinder.BuBuPathFinderResponse;
 import bubu.pathfinder.beans.Coordinate;
 import bubu.pathfinder.beans.Map;
 import bubu.pathfinder.exception.CannotFindPathException;
@@ -71,11 +72,10 @@ public class Benchmark {
 
                         if (algoCounter == 1) {
 
-                            List<Coordinate> path = new ArrayList<Coordinate>();
-                            path = pathFinder.findPath(bubumap, false);
+                            BuBuPathFinderResponse buBuPathFinderResponse = pathFinder.findPath(bubumap, false);
                             StopWatch.stopTimer();
                             if (showAllInfo) {
-                                System.out.println(i + " : Found path in " + StopWatch.getDuration() + " milliseconds, " + path.size() + " steps");
+                                System.out.println(i + " : Found path in " + StopWatch.getDuration() + " milliseconds, " + buBuPathFinderResponse.getPath().size() + " steps");
                             } else {
                                 System.out.print(".");
                             }

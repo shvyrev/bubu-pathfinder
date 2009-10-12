@@ -4,12 +4,11 @@ import bubu.astar.AStarPathFinder;
 import bubu.astar.AStarResponse;
 import bubu.palette.PaletteTools;
 import bubu.pathfinder.BuBuPathFinder;
-import bubu.pathfinder.beans.Coordinate;
+import bubu.pathfinder.BuBuPathFinderResponse;
 import bubu.pathfinder.beans.Map;
 import bubu.pathfinder.exception.CannotFindPathException;
 import bubu.tools.StopWatch;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Main {
 
@@ -22,14 +21,15 @@ public class Main {
 
         StopWatch.startTimer();
 
-        int width = 1500 / 2;
-        int heigth = 1500 / 2;
+        int width = 90 / 2;
+        int heigth = 90 / 2;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
         int lineMaximumLength = (int) (lineMinimumLength * 1.5);
         double complexity = 0.5;
-        boolean saveImages = false;
+        boolean saveImages = true;
+        boolean savePalettes = false;
 
         int resizeFactor = 1;
 
@@ -38,7 +38,12 @@ public class Main {
         String filenameAStar = filename + "-AStar." + imageFormat;
         String filenameBuBu = filename + "-BuBu." + imageFormat;
 
-        Map bubuMap = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
+        Map bubuMap = new Map();
+
+        bubuMap = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
+        //bubuMap = MazeTools.loadMapFromFile("maze1");
+        bubuMap = MazeTools.enlargeMap(bubuMap, 10);
+        //bubuMap = TextMaze.getHugeEmptyMap(2000, 2000);
         Map astarMap = bubuMap.clone();
 
         StopWatch.stopTimer();
@@ -51,36 +56,40 @@ public class Main {
         boolean loadImageBuBu = false;
         boolean loadImageAStar = false;
 
-        ArrayList<Integer[]> deadEndPaletteRoute = PaletteTools.generateRandomPaletteRoute(3, true);
+        ArrayList<Integer[]> deadEndPaletteRoute = PaletteTools.generateRandomPaletteRoute(1, true);
 
         ArrayList<Integer[]> pathPaletteRoute = new ArrayList<Integer[]>();
-        pathPaletteRoute.add(new Integer[]{0, 0, 255});
-        pathPaletteRoute.add(new Integer[]{128, 128, 128});
-        pathPaletteRoute.add(new Integer[]{0, 0, 255});
+//        pathPaletteRoute.add(new Integer[]{0, 0, 255});
+//        pathPaletteRoute.add(new Integer[]{128, 128, 128});
+//        pathPaletteRoute.add(new Integer[]{0, 0, 255});
+
+        Integer[] firstFromDeadEnd = deadEndPaletteRoute.get(0);
+
+        pathPaletteRoute.add(new Integer[]{255- firstFromDeadEnd[0].intValue(), 255- firstFromDeadEnd[1].intValue(), 255- firstFromDeadEnd[2].intValue()});
+        pathPaletteRoute.add(new Integer[]{255, 255, 255});
 
 
         try {
-
-            List<Coordinate> path = new ArrayList<Coordinate>();
 
             if (true) {
 
                 System.out.println("Finding path using BuBu Algorithm....");
                 StopWatch.startTimer();
-                path = pathFinder.findPath(bubuMap, false);
+                BuBuPathFinderResponse buBuPathFinderResponse = pathFinder.findPath(bubuMap, false);
                 StopWatch.stopTimer();
-                System.out.println("Found path in " + StopWatch.getDuration() + " milliseconds, " + path.size() + " steps");
+                System.out.println("Found path in " + StopWatch.getDuration() + " milliseconds, " + buBuPathFinderResponse.getPath().size() + " steps");
 
                 if (true && saveImages) {
                     System.out.println("Saving image...." + filenameBuBu);
                     pathFinder.saveMapImage(bubuMap,
-                            path,
+                            buBuPathFinderResponse.getPath(),
                             filenameBuBu,
                             resizeFactor,
                             true,
                             imageFormat,
                             deadEndPaletteRoute,
-                            pathPaletteRoute);
+                            pathPaletteRoute,
+                            savePalettes);
 
                     loadImageBuBu = true;
                 }
@@ -88,7 +97,7 @@ public class Main {
 
             bubuMap = null;
 
-            if (false) {
+            if (true) {
 
                 System.out.println("Finding path using A* Algorithm....");
                 AStarPathFinder aStarPathFinder = new AStarPathFinder();
@@ -108,7 +117,8 @@ public class Main {
                             imageFormat,
                             aStarResponse.getMaxCost(),
                             deadEndPaletteRoute,
-                            pathPaletteRoute);
+                            pathPaletteRoute,
+                            savePalettes);
 
                     loadImageAStar = true;
                 }

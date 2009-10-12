@@ -79,10 +79,8 @@ public class MazeGenerator {
         map.getGrid()[(width*2)-1][heigth*2] = emptySpaceValue;
         map.getGrid()[width*2][(heigth*2)-1] = emptySpaceValue;
 
-
-
-
-
+        map.getGrid()[0][heigth*2] = -100;
+        map.getGrid()[width*2][0] = -200;
 
         map.setStartLocation(new Coordinate(0, (heigth * 2)));
         map.setEndLocation(new Coordinate((width * 2), 0));

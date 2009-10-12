@@ -86,7 +86,7 @@ public class BuBuPathFinder {
 
     }
 
-    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, ArrayList<Integer[]> deadEndPaletteRoute, ArrayList<Integer[]> pathPaletteRoute) throws IOException, Exception {
+    public void saveMapImage(Map map, List<Coordinate> path, String filename, int resizeFactor, boolean drawDeadEnds, String fileFormat, ArrayList<Integer[]> deadEndPaletteRoute, ArrayList<Integer[]> pathPaletteRoute, boolean savePalette) throws IOException, Exception {
 
         int[] deadEndPalette;
 
@@ -119,7 +119,7 @@ public class BuBuPathFinder {
                     // wall
                     raster.setPixels(
                             x * resizeFactor,
-                            imageHeigth - resizeFactor -  (y * resizeFactor),
+                            imageHeigth - resizeFactor - (y * resizeFactor),
                             resizeFactor,
                             resizeFactor,
                             wallColour);
@@ -138,12 +138,12 @@ public class BuBuPathFinder {
                     if (!drawDeadEnds || map.getGrid()[x][y] <= 0) {
                         // unvisited
                         try {
-                        raster.setPixels(
-                                x * resizeFactor,
-                                imageHeigth - resizeFactor - (y * resizeFactor),
-                                resizeFactor,
-                                resizeFactor,
-                                unvisitedSpaceColour);
+                            raster.setPixels(
+                                    x * resizeFactor,
+                                    imageHeigth - resizeFactor - (y * resizeFactor),
+                                    resizeFactor,
+                                    resizeFactor,
+                                    unvisitedSpaceColour);
                         } catch (Exception e) {
                             System.out.println((x * resizeFactor) + " " + (imageHeigth - 1 - resizeFactor - (y * resizeFactor)));
                             throw e;
@@ -152,7 +152,7 @@ public class BuBuPathFinder {
                         // visited
                         raster.setPixels(
                                 x * resizeFactor,
-                                imageHeigth - resizeFactor -  (y * resizeFactor),
+                                imageHeigth - resizeFactor - (y * resizeFactor),
                                 resizeFactor,
                                 resizeFactor,
                                 paletteColour);
@@ -200,11 +200,11 @@ public class BuBuPathFinder {
         }
 
         ImageIO.write(image, fileFormat.toUpperCase(), new File(filename));
-        savePaletteImage(deadEndPalette, 30, filename, fileFormat);
+        if (savePalette) {
+            savePaletteImage(deadEndPalette, 30, filename, fileFormat);
+        }
 
     }
-
-    
 
     private void savePaletteImage(int palette[], int paletteImageHeigth, String filename, String imageFormat) {
 
@@ -299,12 +299,14 @@ public class BuBuPathFinder {
 
     }
 
-    public List<Coordinate> findPath(Map map, boolean allowDiagonal) throws CannotFindPathException, Exception {
+    public BuBuPathFinderResponse findPath(Map map, boolean allowDiagonal) throws CannotFindPathException, Exception {
 
         int mapWidth = getMapWidth(map.getGrid());
         int mapHeigth = getMapHeigth(map.getGrid());
 
-        ArrayList<Coordinate> path = new ArrayList<Coordinate>();
+        BuBuPathFinderResponse response = new BuBuPathFinderResponse();
+
+        response.setPath(new ArrayList<Coordinate>());
 
         // -1 = empty space
         // -2 = blocked space
@@ -335,7 +337,7 @@ public class BuBuPathFinder {
             }
 
             if (adjacentBlockSearchResult.foundEndLocation) {
-                 keepLooping = false;
+                keepLooping = false;
             }
 
 
@@ -365,7 +367,7 @@ public class BuBuPathFinder {
 
                 if (value == distance) {
                     currentCoordinate = currentAdjacentBlock;
-                    path.add(currentAdjacentBlock);
+                    response.getPath().add(currentAdjacentBlock);
                     break;
                 }
 
@@ -374,7 +376,7 @@ public class BuBuPathFinder {
         }
 
 
-        return path;
+        return response;
 
     }
 
@@ -542,7 +544,6 @@ public class BuBuPathFinder {
 
     }
 
-
     private class AdjacentBlockSearchResult {
 
         public ArrayList<Coordinate> adjacentBlocks;
@@ -550,8 +551,5 @@ public class BuBuPathFinder {
 
         public AdjacentBlockSearchResult() {
         }
-
-        
-
     }
 }

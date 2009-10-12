@@ -319,7 +319,8 @@ public class BuBuPathFinder {
         ArrayList<Coordinate> currentCoordinates = new ArrayList<Coordinate>();
         currentCoordinates.add(map.getStartLocation());
 
-        ArrayList<Coordinate> adjacentBlocks = new ArrayList<Coordinate>();
+        AdjacentBlockSearchResult adjacentBlockSearchResult = new AdjacentBlockSearchResult();
+        adjacentBlockSearchResult.foundEndLocation = false;
 
         boolean keepLooping = true;
 
@@ -327,21 +328,22 @@ public class BuBuPathFinder {
 
         while (keepLooping) {
 
-            adjacentBlocks = findAdjacentBlocks(mapArray, currentCoordinates, allowDiagonal, mapWidth, mapHeigth, currentDistance);
+            adjacentBlockSearchResult = findAdjacentBlocks(mapArray, currentCoordinates, allowDiagonal, mapWidth, mapHeigth, currentDistance);
 
-            if (adjacentBlocks.isEmpty()) {
+            if (adjacentBlockSearchResult.adjacentBlocks.isEmpty()) {
                 throw new CannotFindPathException();
             }
 
-            if (isLocationInList(adjacentBlocks, map.getEndLocation())) {
-                keepLooping = false;
+            if (adjacentBlockSearchResult.foundEndLocation) {
+                 keepLooping = false;
             }
+
 
             //System.out.println(currentDistance + " : " + adjacentBlocks.toString());
 
             currentCoordinates.clear();
-            currentCoordinates.addAll(adjacentBlocks);
-            adjacentBlocks.clear();
+            currentCoordinates.addAll(adjacentBlockSearchResult.adjacentBlocks);
+            adjacentBlockSearchResult.adjacentBlocks.clear();
 
             currentDistance++;
 
@@ -350,14 +352,14 @@ public class BuBuPathFinder {
 
         Coordinate currentCoordinate = map.getEndLocation();
 
-        adjacentBlocks.clear();
-        adjacentBlocks = new ArrayList<Coordinate>();
+        adjacentBlockSearchResult.adjacentBlocks.clear();
+        adjacentBlockSearchResult.adjacentBlocks = new ArrayList<Coordinate>();
 
         for (int distance = currentDistance; distance > 0; distance--) {
 
-            adjacentBlocks = findAdjacentBlocksForPathBack(mapArray, currentCoordinate, adjacentBlocks, allowDiagonal, mapWidth, mapHeigth);
+            adjacentBlockSearchResult.adjacentBlocks = findAdjacentBlocksForPathBack(mapArray, currentCoordinate, adjacentBlockSearchResult.adjacentBlocks, allowDiagonal, mapWidth, mapHeigth);
 
-            for (Coordinate currentAdjacentBlock : adjacentBlocks) {
+            for (Coordinate currentAdjacentBlock : adjacentBlockSearchResult.adjacentBlocks) {
 
                 int value = mapArray[currentAdjacentBlock.getX()][currentAdjacentBlock.getY()];
 
@@ -376,9 +378,11 @@ public class BuBuPathFinder {
 
     }
 
-    private ArrayList<Coordinate> findAdjacentBlocks(int[][] map, List<Coordinate> locations, boolean allowDiagonal, int width, int height, int currentDistance) throws Exception {
+    private AdjacentBlockSearchResult findAdjacentBlocks(int[][] map, List<Coordinate> locations, boolean allowDiagonal, int width, int height, int currentDistance) throws Exception {
 
-        ArrayList<Coordinate> coords = new ArrayList<Coordinate>();
+        AdjacentBlockSearchResult adjacentBlockSearchResult = new AdjacentBlockSearchResult();
+
+        adjacentBlockSearchResult.adjacentBlocks = new ArrayList<Coordinate>();
 
         for (Coordinate location : locations) {
 
@@ -437,21 +441,22 @@ public class BuBuPathFinder {
                 if (current.getX() >= 0 && current.getX() < width && current.getY() >= 0 && current.getY() < height) { // range check
                     int adjacentLocationValue = map[current.getX()][current.getY()];
                     if (adjacentLocationValue == -1) { // if adjacent location is empty
-                        if (!coords.contains(current)) {
-                            coords.add(current);
+                        if (!adjacentBlockSearchResult.adjacentBlocks.contains(current)) {
+                            adjacentBlockSearchResult.adjacentBlocks.add(current);
                         }
                         map[current.getX()][current.getY()] = currentDistance;
                     } else if (adjacentLocationValue == -200) { // if adjacent location is end point
-                        if (!coords.contains(current)) {
-                            coords.add(current);
+                        if (!adjacentBlockSearchResult.adjacentBlocks.contains(current)) {
+                            adjacentBlockSearchResult.adjacentBlocks.add(current);
                         }
+                        adjacentBlockSearchResult.foundEndLocation = true;
                     }
                 }
             }
 
         }
 
-        return coords;
+        return adjacentBlockSearchResult;
 
     }
 
@@ -534,6 +539,19 @@ public class BuBuPathFinder {
     private boolean isLocationInList(ArrayList<Coordinate> coordinateList, Coordinate coordinate) {
 
         return coordinateList.contains(coordinate);
+
+    }
+
+
+    private class AdjacentBlockSearchResult {
+
+        public ArrayList<Coordinate> adjacentBlocks;
+        public boolean foundEndLocation;
+
+        public AdjacentBlockSearchResult() {
+        }
+
+        
 
     }
 }

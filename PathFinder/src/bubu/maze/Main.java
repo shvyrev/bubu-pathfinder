@@ -22,8 +22,8 @@ public class Main {
 
         StopWatch.startTimer();
 
-        int width = 6000 / 2;
-        int heigth = 6000 / 2;
+        int width = 1500 / 2;
+        int heigth = 1500 / 2;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
@@ -43,10 +43,10 @@ public class Main {
 
         StopWatch.stopTimer();
 
-        width = pathFinder.getMapWidth(bubuMap.getGrid());
-        heigth = pathFinder.getMapHeigth(bubuMap.getGrid());
+        int mazeWidth = pathFinder.getMapWidth(bubuMap.getGrid());
+        int mazeHeigth = pathFinder.getMapHeigth(bubuMap.getGrid());
 
-        System.out.println("Generated maze of " + width + " x " + heigth + " in " + StopWatch.getDuration() + " milliseconds");
+        System.out.println("Generated maze of " + mazeWidth + " x " + mazeHeigth + " in " + StopWatch.getDuration() + " milliseconds");
 
         boolean loadImageBuBu = false;
         boolean loadImageAStar = false;
@@ -88,7 +88,7 @@ public class Main {
 
             bubuMap = null;
 
-            if (true) {
+            if (false) {
 
                 System.out.println("Finding path using A* Algorithm....");
                 AStarPathFinder aStarPathFinder = new AStarPathFinder();

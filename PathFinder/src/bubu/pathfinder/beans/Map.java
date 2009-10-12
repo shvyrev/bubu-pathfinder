@@ -2,9 +2,9 @@ package bubu.pathfinder.beans;
 
 public class Map implements Cloneable {
 
-    int[][] grid;
-    Coordinate startLocation;
-    Coordinate endLocation;
+    private int[][] grid;
+    private Coordinate startLocation;
+    private Coordinate endLocation;
 
     public Map() {
     }
@@ -34,11 +34,20 @@ public class Map implements Cloneable {
     }
 
     public Map clone() {
-        try {
-            return (Map) super.clone();
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
 
+        Map newmap = new Map();
+        newmap.grid = new int[grid.length][grid[0].length];
+
+        for (int x = 0; x < grid.length; x++) {
+            for (int y = 0; y < grid[x].length; y++) {
+                newmap.grid[x][y] = grid[x][y];
+            }
+        }
+
+        newmap.startLocation = new Coordinate(startLocation.getX(), startLocation.getY());
+        newmap.endLocation = new Coordinate(endLocation.getX(), endLocation.getY());
+
+        return newmap;
+
+    }
 }

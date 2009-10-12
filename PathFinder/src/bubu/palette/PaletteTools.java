@@ -11,7 +11,7 @@ public class PaletteTools {
         for (int i = 1; i <= numberOfRandomColours; i++) {
             paletteRoute.add(new Integer[]{(int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)});
             if (blackAlternation) {
-                paletteRoute.add(new Integer[]{0, 0, 0});
+                paletteRoute.add(new Integer[]{50, 50, 50});
             }
         }
 

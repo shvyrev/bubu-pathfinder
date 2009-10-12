@@ -10,8 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 public class AStarPathFinder {
@@ -23,9 +21,11 @@ public class AStarPathFinder {
         int width = getMapWidth(map.getGrid());
         int heigth = getMapHeigth(map.getGrid());
 
+        
+
         int[] openList = new int[width * width + 2];
         int[][] whichList = new int[width + 1][heigth + 1];
-        int[] openX = new int[width * width + 2];
+        int[] openX = new int[(width * width) + 2];
         int[] openY = new int[width * width + 2];
         int[][] parentX = new int[width + 1][heigth + 1];
         int[][] parentY = new int[width + 1][heigth + 1];
@@ -219,37 +219,13 @@ public class AStarPathFinder {
 
     public int getMapWidth(int[][] map) {
 
-        int counter = 0;
-
-        while (true) {
-
-            try {
-                int location = map[counter][0];
-                counter++;
-            } catch (Exception e) {
-                return counter;
-            }
-
-        }
+        return map.length;
 
     }
 
     public int getMapHeigth(int[][] map) {
 
-        int counter = 0;
-
-        while (true) {
-
-            try {
-
-                int location = map[0][counter];
-                counter++;
-
-            } catch (Exception e) {
-                return counter;
-            }
-
-        }
+        return map[0].length;
 
     }
 

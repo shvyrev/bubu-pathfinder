@@ -504,37 +504,13 @@ public class BuBuPathFinder {
 
     public int getMapWidth(int[][] map) {
 
-        int counter = 0;
-
-        while (true) {
-
-            try {
-                int location = map[counter][0];
-                counter++;
-            } catch (Exception e) {
-                return counter;
-            }
-
-        }
+        return map.length;
 
     }
 
     public int getMapHeigth(int[][] map) {
 
-        int counter = 0;
-
-        while (true) {
-
-            try {
-
-                int location = map[0][counter];
-                counter++;
-
-            } catch (Exception e) {
-                return counter;
-            }
-
-        }
+        return map[0].length;
 
     }
 

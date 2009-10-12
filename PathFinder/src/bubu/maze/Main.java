@@ -21,8 +21,8 @@ public class Main {
 
         StopWatch.startTimer();
 
-        int width = 90 / 2;
-        int heigth = 90 / 2;
+        int width = 1000 / 2;
+        int heigth = 1000 / 2;
         int linearFactor = Integer.MAX_VALUE;
         double horizontalVerticalBias = 0.5;
         int lineMinimumLength = 50;
@@ -42,7 +42,7 @@ public class Main {
 
         bubuMap = mg.generateMaze(width, heigth, linearFactor, horizontalVerticalBias, lineMinimumLength, lineMaximumLength, complexity, -1, -2);
         //bubuMap = MazeTools.loadMapFromFile("maze1");
-        bubuMap = MazeTools.enlargeMap(bubuMap, 10);
+        //bubuMap = MazeTools.enlargeMap(bubuMap, 40);
         //bubuMap = TextMaze.getHugeEmptyMap(2000, 2000);
         Map astarMap = bubuMap.clone();
 
@@ -56,7 +56,7 @@ public class Main {
         boolean loadImageBuBu = false;
         boolean loadImageAStar = false;
 
-        ArrayList<Integer[]> deadEndPaletteRoute = PaletteTools.generateRandomPaletteRoute(1, true);
+        ArrayList<Integer[]> deadEndPaletteRoute = PaletteTools.generateRandomPaletteRoute(3, true);
 
         ArrayList<Integer[]> pathPaletteRoute = new ArrayList<Integer[]>();
 //        pathPaletteRoute.add(new Integer[]{0, 0, 255});

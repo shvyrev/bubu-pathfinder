@@ -1,10 +1,8 @@
 package bubu.filecompressor;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+import java.util.ArrayList;
 
 public class Main {
 
@@ -15,53 +13,129 @@ public class Main {
         BufferedReader reader = null;
         try {
             File file = new File(filePath);
-            reader = new BufferedReader(new FileReader(file));
-            char[] data = new char[(int) file.length()];
-            reader.read(data);
+            byte[] data = new byte[(int) file.length()];
+            FileInputStream fis = new FileInputStream(file);
 
-            ArrayList<DataNode> nodes = new ArrayList<DataNode>();
 
-            System.out.println(data.length);
 
-            for (int i = 1; i < data.length; i++) {
+            fis.read(data);
+
+            int code = 256;
+
+            ArrayList<DataNode> dictionary = new ArrayList<DataNode>();
+
+            for (short i = 0; i < 256; i++) {
+                //System.out.println(i + " " + String.valueOf((char) i));
 
                 DataNode node = new DataNode();
-                node.setCharacter(data[i - 1]);
-                node.setFollowingCharacter(data[i]);
+                node.setCharacter(i);
+                dictionary.add(node);
+            }
 
 
-                int indexOf = nodes.indexOf(node);
-                if (indexOf > -1) {
-                    nodes.get(indexOf).incrementQuantity();
+//            for (DataNode x : dictionary) {
+//                displayDataNode(x, 1);
+//            }
+
+            String p = "";
+
+            for (int i = 0; i < data.length; i++) {
+                char c = (char) (data[i]);
+
+                System.out.println((int) c + " - " + c);
+
+                String temp = p + String.valueOf(c);
+
+                if (isInDictionary(dictionary, temp)) {
+                    p = p + String.valueOf(c);
                 } else {
-                    node.incrementQuantity();
-                    nodes.add(node);
+                    System.out.println("Dictionary: " + code + " " + p);
+                    addToDictionary(dictionary, p + String.valueOf(c));
+                    p = String.valueOf(c);
+                    code++;
                 }
 
             }
-
-            int totalQuantity = 0;
-
-            for (DataNode current : nodes) {
-
-                if (current.getQuantity() > 100) {
-
-                    System.out.println(current.getCharacter() + "\t->\t" + current.getFollowingCharacter() + "\t:\t" + current.getQuantity());
-                }
-                totalQuantity += current.getQuantity();
-
-            }
-
-            System.out.println(totalQuantity);
 
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+        }
+
+    }
+
+    private static void displayDataNode(DataNode node, int depth) {
+        for (int i = 0; i < depth; i++) {
+            System.out.print("->");
+        }
+        System.out.println(node.getCharacter());
+        for (DataNode fdn : node.getFollowingCharacters()) {
+            displayDataNode(fdn, depth + 1);
+        }
+
+    }
+
+    private static boolean isInDictionary(ArrayList<DataNode> dictionary, String data) {
+        boolean ret = true;
+
+        DataNode node = null;
+
+        for (char current : data.toCharArray()) {
+
+            DataNode temp = new DataNode((short) current);
+
+            int index;
+
+            if (node == null) {
+                index = dictionary.indexOf(temp);
+
+            } else {
+                index = node.getFollowingCharacters().indexOf(temp);
+
             }
+
+            if (index == -1) {
+                return false;
+            } else {
+                if (node == null) {
+                    node = dictionary.get(index);
+                } else {
+                    node = node.getFollowingCharacters().get(index);
+                }
+            }
+
+        }
+
+        return ret;
+    }
+
+    private static void addToDictionary(ArrayList<DataNode> dictionary, String data) {
+
+        DataNode node = null;
+
+        for (char current : data.toCharArray()) {
+            
+            DataNode temp = new DataNode((short) current);
+
+            int index;
+
+            if (node == null) {
+                index = dictionary.indexOf(temp);
+            } else {
+                index = node.getFollowingCharacters().indexOf(temp);
+            }
+
+            if (index > -1) {
+                if (node == null) {
+                    node = dictionary.get(index);
+                } else {
+                    node = node.getFollowingCharacters().get(index);
+                }
+            } else {
+                DataNode newNode = new DataNode((short) current);
+                node.getFollowingCharacters().add(newNode);
+                node = newNode;
+            }
+
         }
 
     }

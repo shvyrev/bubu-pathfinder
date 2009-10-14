@@ -1,39 +1,55 @@
 package bubu.filecompressor;
 
+import java.util.ArrayList;
+
 public class DataNode {
 
-    private char character;
-    private char followingCharacter;
+    private short character;
+    private ArrayList<DataNode> followingCharacters;
     private long quantity;
 
     public DataNode() {
     }
 
-    public char getCharacter() {
+    public DataNode(short character) {
+        this.character = character;
+    }
+
+    public short getCharacter() {
         return character;
     }
 
-    public void setCharacter(char character) {
+    public void setCharacter(short character) {
         this.character = character;
     }
-    public long getQuantity() {
-        return quantity;
+
+    public ArrayList<DataNode> getFollowingCharacters() {
+        if (followingCharacters == null) {
+            followingCharacters = new ArrayList<DataNode>();
+        }
+        return followingCharacters;
     }
 
-    public void incrementQuantity() {
-        quantity++;
+    public void setFollowingCharacters(ArrayList<DataNode> followingCharacters) {
+        this.followingCharacters = followingCharacters;
+    }
+
+    public long getQuantity() {
+        return quantity;
     }
 
     public void setQuantity(long quantity) {
         this.quantity = quantity;
     }
 
-    public char getFollowingCharacter() {
-        return followingCharacter;
-    }
+    public String toString() {
 
-    public void setFollowingCharacter(char followingCharacter) {
-        this.followingCharacter = followingCharacter;
+        String x = ((char) character) +"->";
+        for (DataNode current : getFollowingCharacters()) {
+            x = x + ((char)current.getCharacter());
+        }
+
+        return x;
     }
 
     @Override
@@ -48,22 +64,8 @@ public class DataNode {
         if (this.character != other.character) {
             return false;
         }
-        if (this.followingCharacter != other.followingCharacter) {
-            return false;
-        }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 41 * hash + this.character;
-        hash = 41 * hash + this.followingCharacter;
-        return hash;
-    }
-
-   
-
-
-    
+  
 }

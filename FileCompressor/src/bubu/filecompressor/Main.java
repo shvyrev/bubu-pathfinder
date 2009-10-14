@@ -16,8 +16,6 @@ public class Main {
             byte[] data = new byte[(int) file.length()];
             FileInputStream fis = new FileInputStream(file);
 
-
-
             fis.read(data);
 
             int code = 256;
@@ -25,8 +23,6 @@ public class Main {
             ArrayList<DataNode> dictionary = new ArrayList<DataNode>();
 
             for (short i = 0; i < 256; i++) {
-                //System.out.println(i + " " + String.valueOf((char) i));
-
                 DataNode node = new DataNode();
                 node.setCharacter(i);
                 dictionary.add(node);
@@ -40,16 +36,16 @@ public class Main {
             String p = "";
 
             for (int i = 0; i < data.length; i++) {
-                char c = (char) (data[i]);
+                char c = (char) (data[i] > 0 ? data[i] : data[i]+256);
 
-                System.out.println((int) c + " - " + c);
+//                System.out.println((int) c + " - " + c + " - " + data[i]);
 
                 String temp = p + String.valueOf(c);
 
                 if (isInDictionary(dictionary, temp)) {
                     p = p + String.valueOf(c);
                 } else {
-                    System.out.println("Dictionary: " + code + " " + p);
+                    //System.out.println("Dictionary: " + code + " " + p);
                     addToDictionary(dictionary, p + String.valueOf(c));
                     p = String.valueOf(c);
                     code++;

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class Main {
 
-    private static String filePath = "F:\\Reuben\\My Documents\\NetBeansProjects\\FileCompressor\\data\\data.txt";
+    private static String filePath = ".\\data\\test.txt";
 
     public static void main(String[] args) {
 
@@ -28,29 +28,25 @@ public class Main {
                 dictionary.add(node);
             }
 
-
-//            for (DataNode x : dictionary) {
-//                displayDataNode(x, 1);
-//            }
-
             String p = "";
 
             for (int i = 0; i < data.length; i++) {
-                char c = (char) (data[i] > 0 ? data[i] : data[i]+256);
-
-//                System.out.println((int) c + " - " + c + " - " + data[i]);
+                char c = (char) (data[i] > 0 ? data[i] : data[i] + 256);
 
                 String temp = p + String.valueOf(c);
 
                 if (isInDictionary(dictionary, temp)) {
                     p = p + String.valueOf(c);
                 } else {
-                    //System.out.println("Dictionary: " + code + " " + p);
                     addToDictionary(dictionary, p + String.valueOf(c));
                     p = String.valueOf(c);
                     code++;
                 }
 
+            }
+
+            for (DataNode x : dictionary) {
+                displayDataNode(x, 0);
             }
 
         } catch (Exception ex) {
@@ -61,9 +57,9 @@ public class Main {
 
     private static void displayDataNode(DataNode node, int depth) {
         for (int i = 0; i < depth; i++) {
-            System.out.print("->");
+            System.out.print("> ");
         }
-        System.out.println(node.getCharacter());
+        System.out.println((char)node.getCharacter() + " (" + node.getQuantity()+")");
         for (DataNode fdn : node.getFollowingCharacters()) {
             displayDataNode(fdn, depth + 1);
         }
@@ -72,23 +68,15 @@ public class Main {
 
     private static boolean isInDictionary(ArrayList<DataNode> dictionary, String data) {
         boolean ret = true;
-
         DataNode node = null;
-
         for (char current : data.toCharArray()) {
-
             DataNode temp = new DataNode((short) current);
-
             int index;
-
             if (node == null) {
                 index = dictionary.indexOf(temp);
-
             } else {
                 index = node.getFollowingCharacters().indexOf(temp);
-
             }
-
             if (index == -1) {
                 return false;
             } else {
@@ -98,28 +86,24 @@ public class Main {
                     node = node.getFollowingCharacters().get(index);
                 }
             }
-
         }
+
+        node.incrementQuantity();
 
         return ret;
     }
 
     private static void addToDictionary(ArrayList<DataNode> dictionary, String data) {
-
+        System.out.println("+ " + data);
         DataNode node = null;
-
         for (char current : data.toCharArray()) {
-            
             DataNode temp = new DataNode((short) current);
-
             int index;
-
             if (node == null) {
                 index = dictionary.indexOf(temp);
             } else {
                 index = node.getFollowingCharacters().indexOf(temp);
             }
-
             if (index > -1) {
                 if (node == null) {
                     node = dictionary.get(index);
@@ -128,62 +112,12 @@ public class Main {
                 }
             } else {
                 DataNode newNode = new DataNode((short) current);
+                newNode.incrementQuantity();
                 node.getFollowingCharacters().add(newNode);
                 node = newNode;
             }
-
         }
-
     }
 
-    private static char[] getCharData(int start, int end, char[] source) {
 
-        char[] data = new char[end - start + 1];
-
-        int counter = 0;
-        for (int i = start; i <= end; i++) {
-            data[counter] = source[i];
-            counter++;
-        }
-
-        return data;
-
-
-    }
-
-    private static LinkedList<Integer> findCharPatterns(char[] pattern, char[] source) {
-        LinkedList<Integer> positions = new LinkedList<Integer>();
-
-        for (int i = 0; i < source.length - pattern.length; i++) {
-
-            char[] currentComparisionBytes = new char[pattern.length];
-            for (int x = 0; x < pattern.length; x++) {
-                currentComparisionBytes[x] = source[i + x];
-            }
-
-            if (compareCharPatterns(pattern, currentComparisionBytes)) {
-                positions.add(new Integer(i));
-            }
-        }
-
-
-
-        return positions;
-    }
-
-    private static boolean compareCharPatterns(char[] patternA, char[] patternB) {
-        boolean ret = false;
-
-        if (patternA.length == patternB.length) {
-            boolean charComparision = true;
-            for (int i = 0; i < patternA.length && charComparision; i++) {
-                if (patternA[i] != patternB[i]) {
-                    charComparision = false;
-                }
-            }
-            ret = charComparision;
-        }
-
-        return ret;
-    }
 }

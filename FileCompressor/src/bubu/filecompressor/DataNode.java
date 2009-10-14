@@ -52,6 +52,10 @@ public class DataNode {
         return x;
     }
 
+    public void incrementQuantity() {
+        quantity++;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

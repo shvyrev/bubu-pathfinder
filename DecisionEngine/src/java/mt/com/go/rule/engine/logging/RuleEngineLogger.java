@@ -1,11 +1,11 @@
-package mt.com.go.decision.engine.logging;
+package mt.com.go.rule.engine.logging;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggingEvent;
 
-public class DecisionEngineLogger {
+public class RuleEngineLogger {
 
     private static Logger logger = null;
 

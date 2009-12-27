@@ -1,7 +1,7 @@
-package mt.com.go.decision.engine.rules;
+package mt.com.go.rule.engine.rules;
 
 import java.util.ArrayList;
-import mt.com.go.decision.engine.enums.DecisionEngineLogicalOperator;
+import mt.com.go.rule.engine.enums.RuleEngineLogicalOperator;
 
 public class Rule {
 
@@ -9,13 +9,13 @@ public class Rule {
     private String description;
     private String consequence;
     private Integer priority;
-    private DecisionEngineLogicalOperator logicalOperator;
+    private RuleEngineLogicalOperator logicalOperator;
     private ArrayList<Condition> conditionList;
 
     public Rule() {
     }
 
-    public Rule(String name, String description, String consequence, Integer priority, DecisionEngineLogicalOperator logicalOperator, ArrayList<Condition> conditionList) {
+    public Rule(String name, String description, String consequence, Integer priority, RuleEngineLogicalOperator logicalOperator, ArrayList<Condition> conditionList) {
         this.name = name;
         this.description = description;
         this.consequence = consequence;
@@ -65,11 +65,11 @@ public class Rule {
         this.description = description;
     }
 
-    public DecisionEngineLogicalOperator getLogicalOperator() {
+    public RuleEngineLogicalOperator getLogicalOperator() {
         return logicalOperator;
     }
 
-    public void setLogicalOperator(DecisionEngineLogicalOperator logicalOperator) {
+    public void setLogicalOperator(RuleEngineLogicalOperator logicalOperator) {
         this.logicalOperator = logicalOperator;
     }
 

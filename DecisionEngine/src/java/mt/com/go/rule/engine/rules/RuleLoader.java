@@ -1,9 +1,9 @@
-package mt.com.go.decision.engine.rules;
+package mt.com.go.rule.engine.rules;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import mt.com.go.decision.engine.enums.DecisionEngineLogicalOperator;
-import mt.com.go.decision.engine.logging.DecisionEngineLogger;
+import mt.com.go.rule.engine.enums.RuleEngineLogicalOperator;
+import mt.com.go.rule.engine.logging.RuleEngineLogger;
 
 public class RuleLoader {
 
@@ -21,7 +21,7 @@ public class RuleLoader {
 
         rules = new HashMap<String, ArrayList<Rule>>();
 
-        DecisionEngineLogger.logDebug(this, "Loading Rules...");
+        RuleEngineLogger.logDebug(this, "Loading Rules...");
 
         ArrayList<Rule> goMvnoDecision = new ArrayList<Rule>();
 
@@ -30,7 +30,7 @@ public class RuleLoader {
                 "Either IMSI or MSISDN have to be specified",
                 "SET-UNSUCCESSFUL|ADD-MESSAGE Either IMSI or MSISDN have to be specified",
                 1,
-                DecisionEngineLogicalOperator.AND,
+                RuleEngineLogicalOperator.AND,
                 new ArrayList<Condition>());
 
         Rule imsiFinderRule = new Rule(
@@ -38,7 +38,7 @@ public class RuleLoader {
                 "Find IMSI from the MSISDN parameter",
                 "RUN mt.com.go.decision.engine.consequence.IMSIFinder|SET-PARAM notes=Imsi found from msisdn|RESUBMIT 5",
                 2,
-                DecisionEngineLogicalOperator.AND,
+                RuleEngineLogicalOperator.AND,
                 new ArrayList<Condition>());
 
         Rule goMobileIMSIRule = new Rule(
@@ -46,7 +46,7 @@ public class RuleLoader {
                 "Mark the request as GO",
                 "RUN mt.com.go.decision.engine.consequence.GoMobileIMSI",
                 3,
-                DecisionEngineLogicalOperator.AND,
+                RuleEngineLogicalOperator.AND,
                 new ArrayList<Condition>());
 
         Rule mvno1IMSIRule = new Rule(
@@ -54,7 +54,7 @@ public class RuleLoader {
                 "Mark the request as MVNO 1",
                 "RUN mt.com.go.decision.engine.consequence.Mvno1IMSI",
                 4,
-                DecisionEngineLogicalOperator.AND,
+                RuleEngineLogicalOperator.AND,
                 new ArrayList<Condition>());
 
         Rule mvno2IMSIRule = new Rule(
@@ -62,7 +62,7 @@ public class RuleLoader {
                 "Mark the request as MVNO 2",
                 "RUN mt.com.go.decision.engine.consequence.Mvno2IMSI",
                 5,
-                DecisionEngineLogicalOperator.AND,
+                RuleEngineLogicalOperator.AND,
                 new ArrayList<Condition>());
 
         Rule mvno3IMSIRule = new Rule(
@@ -70,7 +70,7 @@ public class RuleLoader {
                 "Warn that MVNO 3 is not yet available",
                 "RUN mt.com.go.decision.engine.consequence.Mvno3IMSI",
                 6,
-                DecisionEngineLogicalOperator.OR,
+                RuleEngineLogicalOperator.OR,
                 new ArrayList<Condition>());
 
         Rule operatorCodeNotDerived = new Rule (
@@ -78,7 +78,7 @@ public class RuleLoader {
                 "The operator code was not derived",
                 "SET-UNSUCCESSFUL|ADD-MESSAGE The operator code was not derived",
                 7,
-                DecisionEngineLogicalOperator.AND,
+                RuleEngineLogicalOperator.AND,
                 new ArrayList<Condition>());
 
         Condition imsiNotInParamsCondition = new Condition("IMSI not in Parameter list", "imsi", "!exists",null);
@@ -115,7 +115,7 @@ public class RuleLoader {
                 "Test !exists in a condition",
                 "SET-PARAM notes=parameter does not exist|ADD-MESSAGE hello|RESUBMIT 10",
                 1,
-                DecisionEngineLogicalOperator.AND,
+                RuleEngineLogicalOperator.AND,
                 new ArrayList<Condition>());
 
         Condition condition1TestRule1 = new Condition("!exists in a condition", "testParameter", "!exists", null);
@@ -127,7 +127,7 @@ public class RuleLoader {
 
         logRules(rules);
 
-        DecisionEngineLogger.logDebug(this, "Finished Loading Rules...");
+        RuleEngineLogger.logDebug(this, "Finished Loading Rules...");
 
         return rules;
 
@@ -141,7 +141,7 @@ public class RuleLoader {
 
             for (Rule currentRule : temp) {
 
-                DecisionEngineLogger.logDebug(this, "Loaded Rule : " + currentRule.toString());
+                RuleEngineLogger.logDebug(this, "Loaded Rule : " + currentRule.toString());
 
             }
 

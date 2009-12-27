@@ -1,4 +1,4 @@
-package mt.com.go.decision.engine.rules;
+package mt.com.go.rule.engine.rules;
 
 public class Condition {
 

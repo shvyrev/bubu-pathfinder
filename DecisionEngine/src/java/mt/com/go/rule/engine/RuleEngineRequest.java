@@ -1,13 +1,13 @@
-package mt.com.go.decision.engine;
+package mt.com.go.rule.engine;
 
 import java.util.Hashtable;
 
-public class DecisionEngineRequest {
+public class RuleEngineRequest {
 
     private Hashtable<String, String> parameters = new Hashtable<String, String>();
     private String decisionType;
 
-    public DecisionEngineRequest() {
+    public RuleEngineRequest() {
     }
 
     public Hashtable<String, String> getParameters() {

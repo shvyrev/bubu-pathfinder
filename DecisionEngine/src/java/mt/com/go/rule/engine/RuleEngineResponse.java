@@ -1,15 +1,15 @@
-package mt.com.go.decision.engine;
+package mt.com.go.rule.engine;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-public class DecisionEngineResponse {
+public class RuleEngineResponse {
 
     private Hashtable<String, String> parameters;
     private boolean successful;
     private ArrayList<String> messages = new ArrayList<String>();
 
-    public DecisionEngineResponse() {
+    public RuleEngineResponse() {
     }
 
     public Hashtable<String, String> getParameters() {

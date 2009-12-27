@@ -1,8 +1,8 @@
 
 import junit.framework.*;
-import mt.com.go.decision.engine.DecisionEngine;
-import mt.com.go.decision.engine.DecisionEngineRequest;
-import mt.com.go.decision.engine.DecisionEngineResponse;
+import mt.com.go.rule.engine.RuleEngine;
+import mt.com.go.rule.engine.RuleEngineRequest;
+import mt.com.go.rule.engine.RuleEngineResponse;
 
 public class DecisionEngineTests extends TestCase {
 
@@ -11,11 +11,11 @@ public class DecisionEngineTests extends TestCase {
 
     public void testGoMvnoDecision() {
 
-        DecisionEngineResponse response = null;
+        RuleEngineResponse response = null;
 
         try {
-            DecisionEngine engine = new DecisionEngine();
-            DecisionEngineRequest request = new DecisionEngineRequest();
+            RuleEngine engine = new RuleEngine();
+            RuleEngineRequest request = new RuleEngineRequest();
             request.setDecisionType("GO MVNO Decision");
             request.getParameters().put("msisdn", "500A00001");
 
@@ -36,12 +36,12 @@ public class DecisionEngineTests extends TestCase {
     
     public void test1() {
 
-        DecisionEngineResponse response = null;
+        RuleEngineResponse response = null;
         
         try {
             
-            DecisionEngine engine = new DecisionEngine();
-            DecisionEngineRequest request = new DecisionEngineRequest();
+            RuleEngine engine = new RuleEngine();
+            RuleEngineRequest request = new RuleEngineRequest();
             request.setDecisionType("Not exists test");
 
             response = engine.doDecision(request);

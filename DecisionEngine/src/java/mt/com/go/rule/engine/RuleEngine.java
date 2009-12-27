@@ -1,16 +1,16 @@
-package mt.com.go.decision.engine;
+package mt.com.go.rule.engine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-import mt.com.go.decision.engine.condition.iface.ICondition;
-import mt.com.go.decision.engine.consequence.iface.IConsequence;
-import mt.com.go.decision.engine.enums.DecisionEngineLogicalOperator;
-import mt.com.go.decision.engine.exception.DecisionEngineException;
-import mt.com.go.decision.engine.logging.DecisionEngineLogger;
-import mt.com.go.decision.engine.rules.Condition;
-import mt.com.go.decision.engine.rules.Rule;
-import mt.com.go.decision.engine.rules.RuleLoader;
+import mt.com.go.rule.engine.condition.iface.ICondition;
+import mt.com.go.rule.engine.consequence.iface.IConsequence;
+import mt.com.go.rule.engine.enums.RuleEngineLogicalOperator;
+import mt.com.go.rule.engine.exception.RuleEngineException;
+import mt.com.go.rule.engine.logging.RuleEngineLogger;
+import mt.com.go.rule.engine.rules.Condition;
+import mt.com.go.rule.engine.rules.Rule;
+import mt.com.go.rule.engine.rules.RuleLoader;
 
 /**
  * Consequence scripting, each rule can have multiple consequenced delimited by | (pipe)
@@ -27,17 +27,17 @@ import mt.com.go.decision.engine.rules.RuleLoader;
  *
  */
 
-public class DecisionEngine {
+public class RuleEngine {
 
-    public DecisionEngine() {
+    public RuleEngine() {
     }
 
-    public DecisionEngineResponse doDecision(DecisionEngineRequest request) {
+    public RuleEngineResponse doDecision(RuleEngineRequest request) {
 
-        DecisionEngineLogger.logDebug(this, "---");
-        DecisionEngineLogger.logDebug(this, "Received request : " + request.toString());
+        RuleEngineLogger.logDebug(this, "---");
+        RuleEngineLogger.logDebug(this, "Received request : " + request.toString());
 
-        DecisionEngineResponse response = new DecisionEngineResponse();
+        RuleEngineResponse response = new RuleEngineResponse();
         response.setParameters(request.getParameters());
         response.setSuccessful(true);
 
@@ -56,7 +56,7 @@ public class DecisionEngine {
 
                 // log resubmission
                 if (submitCounter > 1) {
-                    DecisionEngineLogger.logDebug(this, "Resubmitted #" + (submitCounter - 1));
+                    RuleEngineLogger.logDebug(this, "Resubmitted #" + (submitCounter - 1));
                 }
 
                 // load all rules
@@ -73,7 +73,7 @@ public class DecisionEngine {
 
                         // if during a resubmission and the priority level is bigger than resubmitPriority, stop resubmitting
                         if (submitCounter > 1 && currentRule.getPriority().longValue() > resubmitPriority) {
-                            DecisionEngineLogger.logDebug(this, "Abandoning resubmissions, priority skipped.");
+                            RuleEngineLogger.logDebug(this, "Abandoning resubmissions, priority skipped.");
                             resubmitAmount = 0;
                             submitCounter = 1;
                             resubmitForever = false;
@@ -82,7 +82,7 @@ public class DecisionEngine {
                         }
 
 
-                        DecisionEngineLogger.logDebug(this, "Running rule : " + currentRule.getName() + " - " + currentRule.getDescription() + " (" + currentRule.getLogicalOperator() + ")");
+                        RuleEngineLogger.logDebug(this, "Running rule : " + currentRule.getName() + " - " + currentRule.getDescription() + " (" + currentRule.getLogicalOperator() + ")");
 
                         boolean ruleSatisfied = false;
 
@@ -133,31 +133,31 @@ public class DecisionEngine {
                                         conditionMatched = true;
                                     }
                                 } catch (Exception ex) {
-                                    throw new DecisionEngineException("> Error running condition", ex);
+                                    throw new RuleEngineException("> Error running condition", ex);
                                 }
 
                             }
 
                             if (conditionMatched) {
                                 matchedConditions++;
-                                DecisionEngineLogger.logDebug(this, "> Condition matched, " + currentCondition.toString());
+                                RuleEngineLogger.logDebug(this, "> Condition matched, " + currentCondition.toString());
                             } else {
-                                DecisionEngineLogger.logDebug(this, "> Condition not matched, " + currentCondition.toString());
+                                RuleEngineLogger.logDebug(this, "> Condition not matched, " + currentCondition.toString());
                             }
 
-                            if (matchedConditions > 0 && currentRule.getLogicalOperator() == DecisionEngineLogicalOperator.OR) {
+                            if (matchedConditions > 0 && currentRule.getLogicalOperator() == RuleEngineLogicalOperator.OR) {
                                 // if DecisionEngineLogicalOperator is set to OR only 1 match is required
                                 ruleSatisfied = true;
-                                DecisionEngineLogger.logDebug(this, "> Rule Satisfied");
+                                RuleEngineLogger.logDebug(this, "> Rule Satisfied");
                                 break;
                             }
 
                         }
 
-                        if (currentRule.getLogicalOperator() == DecisionEngineLogicalOperator.AND && matchedConditions == currentRule.getConditionList().size()) {
+                        if (currentRule.getLogicalOperator() == RuleEngineLogicalOperator.AND && matchedConditions == currentRule.getConditionList().size()) {
                             // if DecisionEngineLogicalOperator is set to AND all conditions need to be matched
                             ruleSatisfied = true;
-                            DecisionEngineLogger.logDebug(this, "> Rule Satisfied");
+                            RuleEngineLogger.logDebug(this, "> Rule Satisfied");
                         }
 
                         if (ruleSatisfied) {
@@ -171,12 +171,12 @@ public class DecisionEngine {
 
                                     String consequenceElement = tokenizer.nextToken().trim();
 
-                                    DecisionEngineLogger.logDebug(this, "> > Running consequence : " + consequenceElement);
+                                    RuleEngineLogger.logDebug(this, "> > Running consequence : " + consequenceElement);
 
                                     if (consequenceElement.startsWith("RESUBMIT") && submitCounter == 1) {
                                         // initialise a resubmission
 
-                                        DecisionEngineRequest resubmitRequest = new DecisionEngineRequest();
+                                        RuleEngineRequest resubmitRequest = new RuleEngineRequest();
                                         resubmitRequest.setDecisionType(request.getDecisionType());
                                         resubmitRequest.setParameters(response.getParameters());
                                         resubmitPriority = currentRule.getPriority().longValue();
@@ -192,7 +192,7 @@ public class DecisionEngine {
                                                 resubmitForever = false;
 
                                             } catch (Exception e) {
-                                                throw new DecisionEngineException("Resubmit amount not properly set", e);
+                                                throw new RuleEngineException("Resubmit amount not properly set", e);
                                             }
 
                                         } else {
@@ -227,7 +227,7 @@ public class DecisionEngine {
                                             }
 
                                         } catch (Exception e) {
-                                            throw new DecisionEngineException("Failed to set parameter", e);
+                                            throw new RuleEngineException("Failed to set parameter", e);
                                         }
 
 
@@ -243,7 +243,7 @@ public class DecisionEngine {
                                             }
 
                                         } catch (Exception e) {
-                                            throw new DecisionEngineException("Failed to remove parameter", e);
+                                            throw new RuleEngineException("Failed to remove parameter", e);
                                         }
 
 
@@ -269,11 +269,11 @@ public class DecisionEngine {
                                             request.setDecisionType(decision);
 
                                         } catch (Exception e) {
-                                            throw new DecisionEngineException("Failed to set decision", e);
+                                            throw new RuleEngineException("Failed to set decision", e);
                                         }
 
                                         if (decision == null || decision.trim().length() == 0) {
-                                            throw new DecisionEngineException("Decision type cannot be empty");
+                                            throw new RuleEngineException("Decision type cannot be empty");
                                         }
 
                                     } else if (consequenceElement.startsWith("SLEEP ")) {
@@ -284,14 +284,14 @@ public class DecisionEngine {
                                             String sleepSeconds = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
 
                                             if (sleepSeconds == null || sleepSeconds.trim().length() == 0) {
-                                                throw new DecisionEngineException("Sleep not setup properly");
+                                                throw new RuleEngineException("Sleep not setup properly");
                                             }
 
                                             long sleepMillis = (long) Double.parseDouble(sleepSeconds) * 1000;
                                             Thread.sleep(sleepMillis);
 
                                         } catch (Exception e) {
-                                            throw new DecisionEngineException("Failed to sleep", e);
+                                            throw new RuleEngineException("Failed to sleep", e);
                                         }
 
                                     } else if (consequenceElement.startsWith("RUN"))  {
@@ -311,7 +311,7 @@ public class DecisionEngine {
 
                             } catch (Exception ex) {
                                 ex.printStackTrace();
-                                throw new DecisionEngineException("Error loading consequence", ex);
+                                throw new RuleEngineException("Error loading consequence", ex);
 
                             }
 
@@ -327,11 +327,11 @@ public class DecisionEngine {
 
             response.setSuccessful(false);
             response.getMessages().add("Internal error : " + e.getMessage());
-            DecisionEngineLogger.logDebug(this, "Internal error.", e);
+            RuleEngineLogger.logDebug(this, "Internal error.", e);
 
         }
 
-        DecisionEngineLogger.logDebug(this, "Response sent : " + response.toString());
+        RuleEngineLogger.logDebug(this, "Response sent : " + response.toString());
 
         return response;
 

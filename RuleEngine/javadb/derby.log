@@ -1,0 +1,7 @@
+Apache Derby Network Server - 10.4.2.1 - (706043) started and ready to accept connections on port 1527 at 2009-12-27 13:10:58.756 GMT 
+----------------------------------------------------------------
+2009-12-27 13:10:59.199 GMT:
+ Booting Derby version The Apache Software Foundation - Apache Derby - 10.4.2.1 - (706043): instance a816c00e-0125-d042-d595-00001a7f30ef
+on database directory F:\Reuben\My Documents\NetBeansProjects\RuleEngine\javadb\RuleEngineDB  
+
+Database Class Loader started - derby.database.classpath=''

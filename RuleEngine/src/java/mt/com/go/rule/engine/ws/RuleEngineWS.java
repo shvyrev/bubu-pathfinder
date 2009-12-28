@@ -17,6 +17,5 @@ public class RuleEngineWS {
         return ruleEngine.executeRule(request);
         
     }
-    
 
 }

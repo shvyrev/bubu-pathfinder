@@ -8,11 +8,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mt.com.go.rule.engine.enums.RuleEngineLogicalOperator;
 import mt.com.go.rule.engine.logging.RuleEngineLogger;
-//import org.apache.derby.jdbc.e
+
 
 public class RuleLoader {
 
@@ -20,6 +18,7 @@ public class RuleLoader {
     private static Connection dbConnection = null;
 
     public RuleLoader() {
+
     }
 
     private Connection getConnection() throws SQLException {
@@ -54,7 +53,7 @@ public class RuleLoader {
 
     }
 
-    public HashMap<String, ArrayList<Rule>> loadRules2() {
+    public HashMap<String, ArrayList<Rule>> loadRules() {
 
         if (rules != null) {
             return rules;
@@ -64,15 +63,15 @@ public class RuleLoader {
 
         RuleEngineLogger.logDebug(this, "Loading Rules...");
 
-        Hashtable<Integer, String> ruleSetsTable = getRuleSets();
-        Hashtable<Integer, Rule> rulesTable = getRules();
-        Hashtable<Integer, Condition> conditionsTable = getConditions();
+        Hashtable<Integer, String> ruleSetsTable = loadRuleSetsFromDB();
+        Hashtable<Integer, Rule> rulesTable = loadRulesFromDB();
+        Hashtable<Integer, Condition> conditionsTable = loadConditionsFromDB();
 
         for (Object currentRuleSet : ruleSetsTable.keySet().toArray()) {
 
             Integer key = (Integer) currentRuleSet;
             String ruleSetName = ruleSetsTable.get(key);
-            ArrayList<Rule> ruleList = loadRuleSet(key, rulesTable, conditionsTable);
+            ArrayList<Rule> ruleList = loadRuleSetsFromDB(key, rulesTable, conditionsTable);
 
             rules.put(ruleSetName, ruleList);
 
@@ -80,10 +79,14 @@ public class RuleLoader {
 
         RuleEngineLogger.logDebug(this, "Finished Loading Rules...");
 
+        RuleEngineLogger.logDebug(this, "Rules summary...");
+
+        logAllRulesLowDetail();
+
         return rules;
     }
 
-    private ArrayList<Rule> loadRuleSet(Integer ruleSetId, Hashtable<Integer, Rule> rulesTable, Hashtable<Integer, Condition> conditionsTable) {
+    private ArrayList<Rule> loadRuleSetsFromDB(Integer ruleSetId, Hashtable<Integer, Rule> rulesTable, Hashtable<Integer, Condition> conditionsTable) {
 
         ArrayList<Rule> ruleSet = new ArrayList<Rule>();
 
@@ -109,7 +112,7 @@ public class RuleLoader {
                 priorityLevel++;
                 rule.setPriority(new Integer(priorityLevel));
 
-                ArrayList<Integer> conditionIdList = getConditionsForRule(currentRuleSetConfig.getRuleId());
+                ArrayList<Integer> conditionIdList = loadRuleConditionMapFromDB(currentRuleSetConfig.getRuleId());
 
                 RuleEngineLogger.logDebug(this, rule.toString());
 
@@ -134,7 +137,7 @@ public class RuleLoader {
 
     }
 
-    private ArrayList<Integer> getConditionsForRule(Integer ruleId) {
+    private ArrayList<Integer> loadRuleConditionMapFromDB(Integer ruleId) {
 
         ArrayList<Integer> conditionIdList = new ArrayList<Integer>();
 
@@ -157,7 +160,7 @@ public class RuleLoader {
 
     }
 
-    private Hashtable<Integer, Condition> getConditions() {
+    private Hashtable<Integer, Condition> loadConditionsFromDB() {
 
         Hashtable<Integer, Condition> conditionsTable = new Hashtable<Integer, Condition>();
 
@@ -187,7 +190,7 @@ public class RuleLoader {
 
     }
 
-    private Hashtable<Integer, Rule> getRules() {
+    private Hashtable<Integer, Rule> loadRulesFromDB() {
 
         Hashtable<Integer, Rule> rulesTable = new Hashtable<Integer, Rule>();
 
@@ -223,7 +226,7 @@ public class RuleLoader {
 
     }
 
-    private Hashtable<Integer, String> getRuleSets() {
+    private Hashtable<Integer, String> loadRuleSetsFromDB() {
 
         Hashtable<Integer, String> ruleSetsTable = new Hashtable<Integer, String>();
         try {
@@ -246,142 +249,40 @@ public class RuleLoader {
         return ruleSetsTable;
     }
 
-    public HashMap<String, ArrayList<Rule>> loadRules() {
+    public void logRulesFullDetail() {
 
-        getRuleSets();
-
-
-        if (rules != null) {
-            return rules;
-        }
-
-        rules = new HashMap<String, ArrayList<Rule>>();
-
-        RuleEngineLogger.logDebug(this, "Loading Rules...");
-
-        ArrayList<Rule> goMvnoDecision = new ArrayList<Rule>();
-
-        Rule parameterChecksRule = new Rule(
-                "Parameter Checkup",
-                "Either IMSI or MSISDN have to be specified",
-                "SET-UNSUCCESSFUL|ADD-MESSAGE Either IMSI or MSISDN have to be specified",
-                1,
-                RuleEngineLogicalOperator.AND,
-                new ArrayList<Condition>());
-
-        Rule imsiFinderRule = new Rule(
-                "IMSI Finder",
-                "Find IMSI from the MSISDN parameter",
-                "RUN mt.com.go.rule.engine.consequence.IMSIFinder|SET-PARAM notes=Imsi found from msisdn|RESUBMIT 5",
-                2,
-                RuleEngineLogicalOperator.AND,
-                new ArrayList<Condition>());
-
-        Rule goMobileIMSIRule = new Rule(
-                "IMSI",
-                "Mark the request as GO",
-                "RUN mt.com.go.rule.engine.consequence.GoMobileIMSI",
-                3,
-                RuleEngineLogicalOperator.AND,
-                new ArrayList<Condition>());
-
-        Rule mvno1IMSIRule = new Rule(
-                "IMSI",
-                "Mark the request as MVNO 1",
-                "RUN mt.com.go.rule.engine.consequence.Mvno1IMSI",
-                4,
-                RuleEngineLogicalOperator.AND,
-                new ArrayList<Condition>());
-
-        Rule mvno2IMSIRule = new Rule(
-                "IMSI",
-                "Mark the request as MVNO 2",
-                "RUN mt.com.go.rule.engine.consequence.Mvno2IMSI",
-                5,
-                RuleEngineLogicalOperator.AND,
-                new ArrayList<Condition>());
-
-        Rule mvno3IMSIRule = new Rule(
-                "IMSI",
-                "Warn that MVNO 3 is not yet available",
-                "RUN mt.com.go.rule.engine.consequence.Mvno3IMSI",
-                6,
-                RuleEngineLogicalOperator.OR,
-                new ArrayList<Condition>());
-
-        Rule operatorCodeNotDerived = new Rule(
-                "Operator N/A",
-                "The operator code was not derived",
-                "SET-UNSUCCESSFUL|ADD-MESSAGE The operator code was not derived",
-                7,
-                RuleEngineLogicalOperator.AND,
-                new ArrayList<Condition>());
-
-        Condition imsiNotInParamsCondition = new Condition("IMSI not in Parameter list", "imsi", "!exists", null);
-        Condition msisdnNotInParamsCondition = new Condition("MSISDN not in Parameter list", "msisdn", "!exists", null);
-        Condition resubmitNotInParamsCondition = new Condition("RESUBMIT not in Parameter list", "resubmit", "!exists", null);
-        Condition goMobileIMSICondition = new Condition("GO Mobile IMSI Condition", "imsi", "500A\\d{5}", null);
-        Condition mvno1IMSICondition = new Condition("MVNO 1 IMSI Condition", "imsi", "500B\\d{5}", null);
-        Condition mvno2IMSICondition = new Condition("MVNO 2 IMSI Condition", "imsi", "500C\\d{5}", null);
-        Condition mvno3IMSICondition = new Condition("MVNO 3 IMSI Condition", null, null, "mt.com.go.rule.engine.condition.Mvno3NotAvailableCondition");
-        Condition alwaysTrue = new Condition("True", null, null, "mt.com.go.rule.engine.condition.TrueCondition");
-
-        parameterChecksRule.getConditionList().add(imsiNotInParamsCondition);
-        parameterChecksRule.getConditionList().add(msisdnNotInParamsCondition);
-        imsiFinderRule.getConditionList().add(imsiNotInParamsCondition);
-        imsiFinderRule.getConditionList().add(resubmitNotInParamsCondition);
-        goMobileIMSIRule.getConditionList().add(goMobileIMSICondition);
-        mvno1IMSIRule.getConditionList().add(mvno1IMSICondition);
-        mvno2IMSIRule.getConditionList().add(mvno2IMSICondition);
-        mvno3IMSIRule.getConditionList().add(mvno3IMSICondition);
-        operatorCodeNotDerived.getConditionList().add(alwaysTrue);
-
-        goMvnoDecision.add(parameterChecksRule);
-        goMvnoDecision.add(imsiFinderRule);
-        goMvnoDecision.add(goMobileIMSIRule);
-        goMvnoDecision.add(mvno1IMSIRule);
-        goMvnoDecision.add(mvno2IMSIRule);
-        goMvnoDecision.add(mvno3IMSIRule);
-        goMvnoDecision.add(operatorCodeNotDerived);
-
-        rules.put("GO MVNO Decision", goMvnoDecision);
-
-        Rule testRule1 = new Rule(
-                "Test Rule 1",
-                "Test !exists in a condition",
-                "SET-PARAM notes=parameter does not exist|ADD-MESSAGE hello|RESUBMIT 10",
-                1,
-                RuleEngineLogicalOperator.AND,
-                new ArrayList<Condition>());
-
-        Condition condition1TestRule1 = new Condition("!exists in a condition", "testParameter", "!exists", null);
-        testRule1.getConditionList().add(condition1TestRule1);
-        ArrayList<Rule> notExistsTest = new ArrayList<Rule>();
-        notExistsTest.add(testRule1);
-
-        rules.put("Not exists test", notExistsTest);
-
-        logRules(rules);
-
-        RuleEngineLogger.logDebug(this, "Finished Loading Rules...");
-
-        return rules;
-
-    }
-
-    private void logRules(HashMap<String, ArrayList<Rule>> rules) {
+        rules = loadRules();
 
         for (Object currentKey : rules.keySet().toArray()) {
-
             ArrayList<Rule> temp = rules.get((String) currentKey);
+            for (Rule currentRule : temp) {
+                RuleEngineLogger.logDebug(this, currentRule.toString());
+            }
+        }
+    }
 
+    public void logAllRulesLowDetail() {
+
+        rules = loadRules();
+
+        for (Object currentKey : rules.keySet().toArray()) {
+            ArrayList<Rule> temp = rules.get((String) currentKey);
             for (Rule currentRule : temp) {
 
-                RuleEngineLogger.logDebug(this, "Loaded Rule : " + currentRule.toString());
+                RuleEngineLogger.logDebug(this, "Rule: " + currentRule.getName() + " \\ "  + currentRule.getDescription());
 
+                StringBuffer buffer = new StringBuffer();
+                buffer.append("> ");
+                int counter = 0;
+                for (Condition currentCondition : currentRule.getConditionList()) {
+                    counter++;
+                    buffer.append("[" + currentCondition.getDescription() + "]");
+                    if (counter < currentRule.getConditionList().size()) {
+                        buffer.append(" " + currentRule.getLogicalOperator() + "  ");
+                    }
+                }
+                RuleEngineLogger.logDebug(this,buffer.toString());
             }
-
         }
-
     }
 }

@@ -3,6 +3,7 @@ import junit.framework.*;
 import mt.com.go.rule.engine.RuleEngine;
 import mt.com.go.rule.engine.RuleEngineRequest;
 import mt.com.go.rule.engine.RuleEngineResponse;
+import mt.com.go.rule.engine.rules.Rule;
 
 public class DecisionEngineTests extends TestCase {
 

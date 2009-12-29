@@ -63,7 +63,6 @@ public class Condition {
     public void setExpression(String expression) {
         this.expression = expression;
     }
-
     
 
 }

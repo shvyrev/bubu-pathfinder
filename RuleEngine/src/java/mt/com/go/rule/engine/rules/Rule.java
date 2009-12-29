@@ -24,6 +24,15 @@ public class Rule {
         this.conditionList = conditionList;
     }
 
+    public Rule getClone() {
+        
+        if (conditionList != null) {
+            return new Rule(name, description, consequence, priority, logicalOperator, (ArrayList<Condition>) conditionList.clone());
+        } else {
+            return new Rule(name, description, consequence, priority, logicalOperator, conditionList);
+        }
+    }
+
     @Override
     public String toString() {
 
@@ -88,7 +97,5 @@ public class Rule {
     public void setPriority(Integer priority) {
         this.priority = priority;
     }
-
-    
 
 }

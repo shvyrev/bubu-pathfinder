@@ -1,6 +1,9 @@
 package mt.com.go.rule.engine.logging;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggingEvent;
@@ -20,7 +23,8 @@ public class RuleEngineLogger {
         if (t == null) {
             logger.debug(message);
         } else {
-            logger.debug(message, t);
+            //logger.debug(message, t);
+            logger.debug(message + " " + getStackTrace(t));
         }
 
     }
@@ -72,10 +76,22 @@ public class RuleEngineLogger {
 
             logger.addAppender(asyncAppender);
             
-            logger.setLevel((Level) Level.DEBUG);
+            logger.setLevel((Level) Level.ALL);
 
             logger.debug("Log file initialised...");
 
         }
     }
+
+    public static String getStackTrace(Throwable t)
+    {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw, true);
+        t.printStackTrace(pw);
+        pw.flush();
+        sw.flush();
+        return sw.toString();
+    }
+
+
 }

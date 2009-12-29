@@ -61,7 +61,7 @@ public class RuleEngine {
 
                 // load all rules
                 RuleLoader ruleLoader = new RuleLoader();
-                HashMap<String, ArrayList<Rule>> globalRules = ruleLoader.loadRules();
+                HashMap<String, ArrayList<Rule>> globalRules = ruleLoader.loadRules2();
 
                 // get the rules that match the requested decision type
                 ArrayList<Rule> requestRuleSet = globalRules.get(request.getDecisionType());

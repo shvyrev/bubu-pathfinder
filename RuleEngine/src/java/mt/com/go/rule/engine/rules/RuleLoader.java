@@ -71,18 +71,14 @@ public class RuleLoader {
         for (Object currentRuleSet : ruleSetsTable.keySet().toArray()) {
 
             Integer key = (Integer) currentRuleSet;
-            rules.put(ruleSetsTable.get(currentRuleSet), loadRuleSet(key, rulesTable, conditionsTable));
+            String ruleSetName = ruleSetsTable.get(key);
+            ArrayList<Rule> ruleList = loadRuleSet(key, rulesTable, conditionsTable);
+
+            rules.put(ruleSetName, ruleList);
 
         }
-
-
 
         RuleEngineLogger.logDebug(this, "Finished Loading Rules...");
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(RuleLoader.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
         return rules;
     }
@@ -114,18 +110,24 @@ public class RuleLoader {
                 rule.setPriority(new Integer(priorityLevel));
 
                 ArrayList<Integer> conditionIdList = getConditionsForRule(currentRuleSetConfig.getRuleId());
+
+                RuleEngineLogger.logDebug(this, rule.toString());
+
                 for (Integer currentConditionId : conditionIdList) {
                     if (rule.getConditionList() == null) {
                         rule.setConditionList(new ArrayList<Condition>());
                     }
-                    rule.getConditionList().add(conditionsTable.get(currentConditionId));
+
+                    Condition condition = conditionsTable.get(currentConditionId);
+                    rule.getConditionList().add(condition);
+                    RuleEngineLogger.logDebug(this,"Adding > " + condition);
                 }
                 ruleSet.add(rule);
-                RuleEngineLogger.logDebug(this, rule.toString());
+                //RuleEngineLogger.logDebug(this, rule.toString());
             }
 
         } catch (Exception ex) {
-            RuleEngineLogger.logDebug(this, "Error while loading rule sets", ex);
+            RuleEngineLogger.logDebug(this, "Error while loading rule set", ex);
         }
 
         return ruleSet;
@@ -174,7 +176,7 @@ public class RuleLoader {
                 condition.setConditionClass(rs.getString("condition_class"));
                 conditionsTable.put(ruleId, condition);
 
-                RuleEngineLogger.logDebug(this, "Loading conditions : " + condition);
+                RuleEngineLogger.logDebug(this, "Loading condition : " + condition);
             }
 
         } catch (Exception ex) {
@@ -210,7 +212,7 @@ public class RuleLoader {
 
                 rulesTable.put(ruleId, rule);
 
-                RuleEngineLogger.logDebug(this, "Loading rules : " + rule);
+                RuleEngineLogger.logDebug(this, "Loading rule : " + rule);
             }
 
         } catch (Exception ex) {

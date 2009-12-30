@@ -159,39 +159,37 @@ public class RuleEngine {
                                     // the value of the parameter to match with the expression
                                     String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
 
+
                                     if (expressionValue.startsWith("@date(")) {
+                                        // compare dates
 
-                                        conditionMatched = compareDates(expressionValue, parameterValue, comparison);
+                                        try {
 
-                                    } else {
+                                            conditionMatched = compareDates(expressionValue, parameterValue, comparison);
 
-                                        if (expressionValue.length() >= 0) {
+                                        } catch (Exception e) {
 
-                                            BigDecimal expressionValueBD = null;
-                                            BigDecimal parameterValueBD = null;
-
-                                            try {
-
-                                                expressionValueBD = new BigDecimal(expressionValue);
-                                                parameterValueBD = new BigDecimal(parameterValue);
-
-                                                if (comparison.equalsIgnoreCase(">=") && parameterValueBD.compareTo(expressionValueBD) >= 0) {
-                                                    conditionMatched = true;
-                                                } else if (comparison.equalsIgnoreCase("<=") && parameterValueBD.compareTo(expressionValueBD) <= 0) {
-                                                    conditionMatched = true;
-                                                } else if (comparison.equalsIgnoreCase(">") && parameterValueBD.compareTo(expressionValueBD) == 1) {
-                                                    conditionMatched = true;
-                                                } else if (comparison.equalsIgnoreCase("<") && parameterValueBD.compareTo(expressionValueBD) == -1) {
-                                                    conditionMatched = true;
-                                                }
-
-                                            } catch (Exception e) {
-                                                response.setSuccessful(false);
-                                                response.getMessages().add("'" + expressionValue + "' " + comparison + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated");
-                                                RuleEngineLogger.logDebug(this, "'" + expressionValue + "' " + comparison + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated", e);
-                                            }
+                                            response.setSuccessful(false);
+                                            response.getMessages().add("'" + expressionValue + "' " + comparison + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated");
+                                            RuleEngineLogger.logDebug(this, "'" + expressionValue + "' " + comparison + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated", e);
 
                                         }
+
+                                    } else {
+                                        // compare numbers
+
+                                        try {
+
+                                            conditionMatched = compareNumbers(expressionValue, parameterValue, comparison);
+
+                                        } catch (Exception e) {
+
+                                            response.setSuccessful(false);
+                                            response.getMessages().add("'" + expressionValue + "' " + comparison + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated");
+                                            RuleEngineLogger.logDebug(this, "'" + expressionValue + "' " + comparison + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated", e);
+
+                                        }
+
                                     }
 
                                 } else if (currentCondition.getExpression().trim().startsWith("=") || currentCondition.getExpression().trim().startsWith("!=")) {
@@ -209,23 +207,19 @@ public class RuleEngine {
                                     String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
 
                                     if (expressionValue.startsWith("@date(")) {
+                                        // compare dates
 
                                         conditionMatched = compareDates(expressionValue, parameterValue, comparison);
-                                        
+
                                     } else {
 
                                         if (isNumber(expressionValue) && isNumber(parameterValue)) {
+                                           // compare numbers
 
-                                            BigDecimal expressionBD = new BigDecimal(expressionValue);
-                                            BigDecimal parameterBD = new BigDecimal(parameterValue);
-
-                                            if (comparison.equalsIgnoreCase("=") && expressionBD.compareTo(parameterBD) == 0) {
-                                                conditionMatched = true;
-                                            } else if (comparison.equalsIgnoreCase("!=") && expressionBD.compareTo(parameterBD) != 0) {
-                                                conditionMatched = true;
-                                            }
+                                            conditionMatched = compareNumbers(expressionValue, parameterValue, comparison);
 
                                         } else {
+                                            // compare strings
 
                                             if (expressionValue.length() > 0) {
 
@@ -502,6 +496,7 @@ public class RuleEngine {
         boolean conditionMatched = false;
 
         String tempDateExpression = dateExpression.substring(6, dateExpression.length()).replace(")", "");
+
         if (tempDateExpression.indexOf(",") > 0) {
 
             String dateValueString = tempDateExpression.substring(0, tempDateExpression.indexOf(",")).trim();
@@ -572,5 +567,38 @@ public class RuleEngine {
         }
 
         return conditionMatched;
+    }
+
+    private boolean compareNumbers(String expressionValue, String parameterValue, String comparison) throws Exception {
+
+        boolean conditionMatched = false;
+
+        if (expressionValue.length() >= 0) {
+
+            BigDecimal expressionValueBD = null;
+            BigDecimal parameterValueBD = null;
+
+
+            expressionValueBD = new BigDecimal(expressionValue);
+            parameterValueBD = new BigDecimal(parameterValue);
+
+            if (comparison.equalsIgnoreCase(">=") && parameterValueBD.compareTo(expressionValueBD) >= 0) {
+                conditionMatched = true;
+            } else if (comparison.equalsIgnoreCase("<=") && parameterValueBD.compareTo(expressionValueBD) <= 0) {
+                conditionMatched = true;
+            } else if (comparison.equalsIgnoreCase(">") && parameterValueBD.compareTo(expressionValueBD) == 1) {
+                conditionMatched = true;
+            } else if (comparison.equalsIgnoreCase("<") && parameterValueBD.compareTo(expressionValueBD) == -1) {
+                conditionMatched = true;
+            } else if (comparison.equalsIgnoreCase("=") && parameterValueBD.compareTo(expressionValueBD) == 0) {
+                conditionMatched = true;
+            } else if (comparison.equalsIgnoreCase("!=") && parameterValueBD.compareTo(expressionValueBD) != 0) {
+                conditionMatched = true;
+            }
+
+        }
+
+        return conditionMatched;
+
     }
 }

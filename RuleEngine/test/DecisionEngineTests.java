@@ -3,7 +3,6 @@ import junit.framework.*;
 import mt.com.go.rule.engine.RuleEngine;
 import mt.com.go.rule.engine.RuleEngineRequest;
 import mt.com.go.rule.engine.RuleEngineResponse;
-import mt.com.go.rule.engine.rules.Rule;
 
 public class DecisionEngineTests extends TestCase {
 
@@ -18,7 +17,7 @@ public class DecisionEngineTests extends TestCase {
             RuleEngine engine = new RuleEngine();
             RuleEngineRequest request = new RuleEngineRequest();
             request.setDecisionType("GO MVNO Decision");
-            request.getParameters().put("msisdn", "500A00001");
+            request.getParameters().put("msisdn", "79A00001");
 
             response = engine.executeRule(request);
 
@@ -34,29 +33,4 @@ public class DecisionEngineTests extends TestCase {
         }
 
     }
-    
-    public void test1() {
-
-        RuleEngineResponse response = null;
-        
-        try {
-            
-            RuleEngine engine = new RuleEngine();
-            RuleEngineRequest request = new RuleEngineRequest();
-            request.setDecisionType("Not exists test");
-
-            response = engine.executeRule(request);
-
-        } catch (Exception ex) {
-
-            assertTrue("Engine failure", false);
-            ex.printStackTrace();
-
-        }        
-        
-    }
-
-
-
 }
-

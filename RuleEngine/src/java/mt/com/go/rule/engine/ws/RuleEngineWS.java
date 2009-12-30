@@ -18,4 +18,12 @@ public class RuleEngineWS {
         
     }
 
+    @WebMethod(operationName = "reloadRules")
+    public void reloadRules() {
+
+        RuleEngine ruleEngine = new RuleEngine();
+        ruleEngine.reloadRules();
+        
+    }
+
 }

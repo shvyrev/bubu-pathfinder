@@ -11,14 +11,12 @@ import java.util.Hashtable;
 import mt.com.go.rule.engine.enums.RuleEngineLogicalOperator;
 import mt.com.go.rule.engine.logging.RuleEngineLogger;
 
-
 public class RuleLoader {
 
     private static HashMap<String, ArrayList<Rule>> rules = null;
     private static Connection dbConnection = null;
 
     public RuleLoader() {
-
     }
 
     private Connection getConnection() throws SQLException {
@@ -53,10 +51,12 @@ public class RuleLoader {
 
     }
 
-    public HashMap<String, ArrayList<Rule>> loadRules() {
+    public HashMap<String, ArrayList<Rule>> loadRules(boolean forceReload) {
 
-        if (rules != null) {
-            return rules;
+        if (!forceReload) {
+            if (rules != null) {
+                return rules;
+            }
         }
 
         rules = new HashMap<String, ArrayList<Rule>>();
@@ -123,7 +123,7 @@ public class RuleLoader {
 
                     Condition condition = conditionsTable.get(currentConditionId);
                     rule.getConditionList().add(condition);
-                    RuleEngineLogger.logDebug(this,"Adding > " + condition);
+                    RuleEngineLogger.logDebug(this, "Adding > " + condition);
                 }
                 ruleSet.add(rule);
                 //RuleEngineLogger.logDebug(this, rule.toString());
@@ -251,7 +251,7 @@ public class RuleLoader {
 
     public void logRulesFullDetail() {
 
-        rules = loadRules();
+        rules = loadRules(false);
 
         for (Object currentKey : rules.keySet().toArray()) {
             ArrayList<Rule> temp = rules.get((String) currentKey);
@@ -263,13 +263,13 @@ public class RuleLoader {
 
     public void logAllRulesLowDetail() {
 
-        rules = loadRules();
+        rules = loadRules(false);
 
         for (Object currentKey : rules.keySet().toArray()) {
             ArrayList<Rule> temp = rules.get((String) currentKey);
             for (Rule currentRule : temp) {
 
-                RuleEngineLogger.logDebug(this, "Rule: " + currentRule.getName() + " \\ "  + currentRule.getDescription());
+                RuleEngineLogger.logDebug(this, "Rule: " + currentRule.getName() + " \\ " + currentRule.getDescription());
 
                 StringBuffer buffer = new StringBuffer();
                 buffer.append("> ");
@@ -281,7 +281,7 @@ public class RuleLoader {
                         buffer.append(" " + currentRule.getLogicalOperator() + "  ");
                     }
                 }
-                RuleEngineLogger.logDebug(this,buffer.toString());
+                RuleEngineLogger.logDebug(this, buffer.toString());
             }
         }
     }

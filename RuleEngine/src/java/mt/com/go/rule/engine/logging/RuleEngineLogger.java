@@ -88,6 +88,14 @@ public class RuleEngineLogger {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw, true);
         t.printStackTrace(pw);
+        
+        Throwable x = t.getCause();
+        while (x != null) {
+            x.printStackTrace(pw);
+            x = x.getCause();
+        }
+
+
         pw.flush();
         sw.flush();
         return sw.toString();

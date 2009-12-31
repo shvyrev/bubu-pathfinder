@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <style type="text/css" media="all">@import "./style.css";</style>
+
+    <f:view>
+        <h:form>
+
+            <h:dataTable value="#{rulesBean.rules}" var="currentRuleSet" border="0">
+                <h:column >
+                    <h:outputText  value="> #{currentRuleSet.ruleSetName}"></h:outputText>
+                    <h:dataTable value="#{currentRuleSet.rules}" var="currentRule" border="0">
+                        <h:column>
+                            <h:outputText  value=">> #{currentRule.name}"></h:outputText>
+                            <h:dataTable value="#{currentRule.conditionList}" var="currentCondition" border="0">
+                                <h:column>
+                                    <h:outputText  value=">>> #{currentCondition.parameterName}  #{currentCondition.expression}"></h:outputText>
+                                </h:column>
+                            </h:dataTable>
+                        </h:column>
+                    </h:dataTable>
+                </h:column>
+            </h:dataTable>
+
+            <h:commandLink value="Back to Main Page" action="index"></h:commandLink>
+
+        </h:form>
+
+    </f:view>
+
+</html>
+

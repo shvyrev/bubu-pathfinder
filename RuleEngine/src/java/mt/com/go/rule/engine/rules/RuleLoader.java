@@ -13,10 +13,11 @@ import mt.com.go.rule.engine.logging.RuleEngineLogger;
 
 public class RuleLoader {
 
-    private static HashMap<String, ArrayList<Rule>> rules = null;
+    private static ArrayList<RuleSet> rules = null;
     private static Connection dbConnection = null;
 
     public RuleLoader() {
+        loadRules(false);
     }
 
     private Connection getConnection() throws SQLException {
@@ -51,7 +52,7 @@ public class RuleLoader {
 
     }
 
-    public HashMap<String, ArrayList<Rule>> loadRules(boolean forceReload) {
+    public ArrayList<RuleSet> loadRules(boolean forceReload) {
 
         if (!forceReload) {
             if (rules != null) {
@@ -59,13 +60,16 @@ public class RuleLoader {
             }
         }
 
-        rules = new HashMap<String, ArrayList<Rule>>();
+        rules = new ArrayList<RuleSet>();
 
         RuleEngineLogger.logDebug(this, "Loading Rules...");
 
         Hashtable<Integer, String> ruleSetsTable = loadRuleSetsFromDB();
+        RuleEngineLogger.logDebug(this, "Loaded rule sets : " + ruleSetsTable.size());
         Hashtable<Integer, Rule> rulesTable = loadRulesFromDB();
+        RuleEngineLogger.logDebug(this, "Loaded rules : " + rulesTable.size());
         Hashtable<Integer, Condition> conditionsTable = loadConditionsFromDB();
+        RuleEngineLogger.logDebug(this, "Loaded conditions : " + conditionsTable.size());
 
         for (Object currentRuleSet : ruleSetsTable.keySet().toArray()) {
 
@@ -73,8 +77,7 @@ public class RuleLoader {
             String ruleSetName = ruleSetsTable.get(key);
             ArrayList<Rule> ruleList = loadRuleSetsFromDB(key, rulesTable, conditionsTable);
 
-            rules.put(ruleSetName, ruleList);
-
+            rules.add(new RuleSet(ruleSetName, ruleList));
         }
 
         RuleEngineLogger.logDebug(this, "Finished Loading Rules...");
@@ -253,22 +256,20 @@ public class RuleLoader {
 
         rules = loadRules(false);
 
-        for (Object currentKey : rules.keySet().toArray()) {
-            ArrayList<Rule> temp = rules.get((String) currentKey);
-            for (Rule currentRule : temp) {
+        for(RuleSet currentRuleSet : rules) {
+            for (Rule currentRule : currentRuleSet.getRules()) {
                 RuleEngineLogger.logDebug(this, currentRule.toString());
             }
         }
+
     }
 
     public void logAllRulesLowDetail() {
 
         rules = loadRules(false);
 
-        for (Object currentKey : rules.keySet().toArray()) {
-            ArrayList<Rule> temp = rules.get((String) currentKey);
-            for (Rule currentRule : temp) {
-
+        for(RuleSet currentRuleSet : rules) {
+            for (Rule currentRule : currentRuleSet.getRules()) {
                 RuleEngineLogger.logDebug(this, "Rule: " + currentRule.getName() + " \\ " + currentRule.getDescription());
 
                 StringBuffer buffer = new StringBuffer();
@@ -284,5 +285,17 @@ public class RuleLoader {
                 RuleEngineLogger.logDebug(this, buffer.toString());
             }
         }
+        
     }
+
+    public static ArrayList<RuleSet> getRules() {
+        return rules;
+    }
+
+    public static void setRules(ArrayList<RuleSet> rules) {
+        RuleLoader.rules = rules;
+    }
+
+
+
 }

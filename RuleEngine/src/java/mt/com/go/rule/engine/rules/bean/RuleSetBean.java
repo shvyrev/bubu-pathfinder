@@ -1,7 +1,12 @@
 package mt.com.go.rule.engine.rules.bean;
 
 import java.util.ArrayList;
+import java.util.List;
+import javax.faces.component.UIComponent;
 import javax.faces.component.html.HtmlDataTable;
+import javax.faces.component.html.HtmlOutputText;
+import javax.faces.component.html.HtmlPanelGrid;
+import javax.faces.component.html.HtmlPanelGroup;
 import mt.com.go.rule.engine.rules.RuleLoader;
 import mt.com.go.rule.engine.rules.RuleSet;
 
@@ -11,6 +16,8 @@ public class RuleSetBean {
     private HtmlDataTable ruleSetTable = null;
     private HtmlDataTable ruleTable = null;
     private HtmlDataTable conditionTable = null;
+
+    private HtmlPanelGrid rulesPanelGrid = null;
 
     public RuleSetBean() {
 
@@ -50,5 +57,31 @@ public class RuleSetBean {
     public void setRuleTable(HtmlDataTable ruleTable) {
         this.ruleTable = ruleTable;
     }
+
+    public HtmlPanelGrid getRulesPanelGrid() {
+
+        if (rulesPanelGrid == null) {
+            rulesPanelGrid = new HtmlPanelGrid();
+
+            rulesPanelGrid.setColumns(10);
+            List<UIComponent> children = rulesPanelGrid.getChildren();
+
+            for (int i =0;i<100;i++) {
+                HtmlOutputText ot = new HtmlOutputText();
+
+                ot.setValue(new Integer(i));
+
+                children.add(ot);
+            }
+
+        }
+
+        return rulesPanelGrid;
+    }
+
+    public void setRulesPanelGrid(HtmlPanelGrid rulesPanelGrid) {
+        this.rulesPanelGrid = rulesPanelGrid;
+    }
+
 
 }

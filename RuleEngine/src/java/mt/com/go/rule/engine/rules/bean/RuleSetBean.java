@@ -17,8 +17,6 @@ public class RuleSetBean {
     private HtmlDataTable ruleTable = null;
     private HtmlDataTable conditionTable = null;
 
-    private HtmlPanelGrid rulesPanelGrid = null;
-
     public RuleSetBean() {
 
         RuleLoader ruleLoader = new RuleLoader();
@@ -58,30 +56,6 @@ public class RuleSetBean {
         this.ruleTable = ruleTable;
     }
 
-    public HtmlPanelGrid getRulesPanelGrid() {
-
-        if (rulesPanelGrid == null) {
-            rulesPanelGrid = new HtmlPanelGrid();
-
-            rulesPanelGrid.setColumns(10);
-            List<UIComponent> children = rulesPanelGrid.getChildren();
-
-            for (int i =0;i<100;i++) {
-                HtmlOutputText ot = new HtmlOutputText();
-
-                ot.setValue(new Integer(i));
-
-                children.add(ot);
-            }
-
-        }
-
-        return rulesPanelGrid;
-    }
-
-    public void setRulesPanelGrid(HtmlPanelGrid rulesPanelGrid) {
-        this.rulesPanelGrid = rulesPanelGrid;
-    }
 
 
 }

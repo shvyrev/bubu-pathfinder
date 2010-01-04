@@ -2,6 +2,7 @@ package mt.com.go.rule.engine.rules;
 
 public class Condition {
 
+    private int conditionId;
     private String description;
     private String parameterName;
     private String expression;
@@ -11,7 +12,8 @@ public class Condition {
     public Condition() {
     }
 
-    public Condition(String description, String attributeName, String expression, String conditionClass) {
+    public Condition(int conditionId, String description, String attributeName, String expression, String conditionClass) {
+        this.conditionId = conditionId;
         this.description = description;
         this.parameterName = attributeName;
         this.expression = expression;
@@ -22,7 +24,8 @@ public class Condition {
 
         StringBuffer buffer = new StringBuffer();
         buffer.append(this.getClass().getSimpleName()).append("={");
-        buffer.append("description=").append(description);
+        buffer.append("conditionId=").append(conditionId);
+        buffer.append(", description=").append(description);
         buffer.append(", parameterName=").append(parameterName);
         buffer.append(", expression=").append(expression);
         buffer.append(", conditionClass=").append(conditionClass);
@@ -63,6 +66,17 @@ public class Condition {
     public void setExpression(String expression) {
         this.expression = expression;
     }
+
+    public int getConditionId() {
+        return conditionId;
+    }
+
+    public void setConditionId(int conditionId) {
+        this.conditionId = conditionId;
+    }
+
+
+
     
 
 }

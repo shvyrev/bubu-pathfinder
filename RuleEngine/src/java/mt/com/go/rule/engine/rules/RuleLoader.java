@@ -26,7 +26,7 @@ public class RuleLoader {
             return dbConnection;
         }
 
-        String DB_CONN_STRING = "jdbc:derby://localhost:1527/RuleEngineDB";
+        String DB_CONN_STRING = "jdbc:derby://localhost:1527/RULE_ENGINE";
         String DRIVER_CLASS_NAME = "org.apache.derby.jdbc.ClientDriver";
         String USER_NAME = "rule_engine";
         String PASSWORD = "rule_engine";
@@ -64,7 +64,7 @@ public class RuleLoader {
 
         RuleEngineLogger.logDebug(this, "Loading Rules...");
 
-        Hashtable<Integer, String> ruleSetsTable = loadRuleSetsFromDB();
+        Hashtable<Integer, RuleSet> ruleSetsTable = loadRuleSetsFromDB();
         RuleEngineLogger.logDebug(this, "Loaded rule sets : " + ruleSetsTable.size());
         Hashtable<Integer, Rule> rulesTable = loadRulesFromDB();
         RuleEngineLogger.logDebug(this, "Loaded rules : " + rulesTable.size());
@@ -74,10 +74,13 @@ public class RuleLoader {
         for (Object currentRuleSet : ruleSetsTable.keySet().toArray()) {
 
             Integer key = (Integer) currentRuleSet;
-            String ruleSetName = ruleSetsTable.get(key);
-            ArrayList<Rule> ruleList = loadRuleSetsFromDB(key, rulesTable, conditionsTable);
+            RuleSet ruleSet = ruleSetsTable.get(key);
+            ruleSet.setRuleSetId(key.intValue());
 
-            rules.add(new RuleSet(ruleSetName, ruleList));
+            ArrayList<Rule> ruleList = loadRuleSetsFromDB(key, rulesTable, conditionsTable);
+            ruleSet.setRules(ruleList);
+
+            rules.add(ruleSet);
         }
 
         RuleEngineLogger.logDebug(this, "Finished Loading Rules...");
@@ -176,6 +179,7 @@ public class RuleLoader {
 
                 Integer ruleId = new Integer(rs.getInt("condition_id"));
                 Condition condition = new Condition();
+                condition.setConditionId(rs.getInt("condition_id"));
                 condition.setDescription(rs.getString("description"));
                 condition.setParameterName(rs.getString("parameter_name"));
                 condition.setExpression(rs.getString("expression"));
@@ -206,6 +210,7 @@ public class RuleLoader {
 
                 Integer ruleId = new Integer(rs.getInt("rule_id"));
                 Rule rule = new Rule();
+                rule.setRuleId(rs.getInt("rule_id"));
                 rule.setName(rs.getString("name"));
                 rule.setDescription(rs.getString("description"));
                 rule.setConsequence(rs.getString("consequence"));
@@ -229,9 +234,9 @@ public class RuleLoader {
 
     }
 
-    private Hashtable<Integer, String> loadRuleSetsFromDB() {
+    private Hashtable<Integer, RuleSet> loadRuleSetsFromDB() {
 
-        Hashtable<Integer, String> ruleSetsTable = new Hashtable<Integer, String>();
+        Hashtable<Integer, RuleSet> ruleSetsTable = new Hashtable<Integer, RuleSet>();
         try {
             Connection con = getConnection();
             PreparedStatement pstmt = con.prepareStatement("select rule_set_id, name from rule_set");
@@ -240,8 +245,7 @@ public class RuleLoader {
             while (rs.next()) {
                 Integer ruleSetId = new Integer(rs.getInt("rule_set_id"));
                 String ruleSetName = rs.getString("name");
-
-                ruleSetsTable.put(ruleSetId, ruleSetName);
+                ruleSetsTable.put(ruleSetId, new RuleSet(ruleSetId.intValue(), ruleSetName, new ArrayList<Rule>()));
                 RuleEngineLogger.logDebug(this, "Loading rule sets : " + ruleSetName);
             }
 

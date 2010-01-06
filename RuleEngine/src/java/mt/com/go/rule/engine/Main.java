@@ -4,7 +4,10 @@
  */
 package mt.com.go.rule.engine;
 
+import java.util.ArrayList;
 import java.util.StringTokenizer;
+import mt.com.go.rule.engine.rules.Rule;
+import mt.com.go.rule.engine.rules.RuleLoader;
 
 /**
  *
@@ -14,13 +17,12 @@ public class Main {
 
     public static void main(String[] args) {
 
+        RuleLoader loader = new RuleLoader();
+        ArrayList<Rule> rules = loader.getRules();
 
-        String temp = "@date(peter,reuben)";
-        temp = temp.substring(6, temp.length()).replace(")", "");
-        System.out.println(temp);
-        
-        System.out.println(temp.substring(0, temp.indexOf(",")));
-        System.out.println(temp.substring(temp.indexOf(",")+1, temp.length()));
+        loader.logAllRulesLowDetail();
+
+
 
         
     }

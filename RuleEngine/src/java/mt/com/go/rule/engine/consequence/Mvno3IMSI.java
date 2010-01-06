@@ -8,7 +8,6 @@ public class Mvno3IMSI implements IConsequence {
 
     public void doConsequence(RuleEngineRequest request, RuleEngineResponse response) {
 
-        response.setSuccessful(false);
         response.getMessages().add("MVNO 3 not yet available");
 
     }

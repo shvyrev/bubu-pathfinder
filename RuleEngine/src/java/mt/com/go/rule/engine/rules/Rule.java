@@ -1,57 +1,56 @@
 package mt.com.go.rule.engine.rules;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import mt.com.go.rule.engine.enums.RuleEngineLogicalOperator;
+
 
 public class Rule {
 
-    private int ruleId;
+    private Integer ruleId;
+    private Integer parentRuleId;
     private String name;
-    private String description;
+    private String code;
     private String consequence;
     private Integer priority;
     private RuleEngineLogicalOperator logicalOperator;
     private ArrayList<Condition> conditionList;
+    private LinkedList<Rule> childRules;
 
     public Rule() {
     }
 
-    public Rule(int ruleId, String name, String description, String consequence, Integer priority, RuleEngineLogicalOperator logicalOperator, ArrayList<Condition> conditionList) {
+    public Rule(Integer ruleId, Integer parentRuleId, String name, String code, String consequence, Integer priority, RuleEngineLogicalOperator logicalOperator, ArrayList<Condition> conditionList, LinkedList<Rule> childRules) {
         this.ruleId = ruleId;
+        this.parentRuleId = parentRuleId;
         this.name = name;
-        this.description = description;
+        this.code = code;
         this.consequence = consequence;
         this.priority = priority;
         this.logicalOperator = logicalOperator;
         this.conditionList = conditionList;
+        this.childRules = childRules;
     }
 
-    public Rule getClone() {
-        
-        if (conditionList != null) {
-            return new Rule(ruleId, name, description, consequence, priority, logicalOperator, (ArrayList<Condition>) conditionList.clone());
-        } else {
-            return new Rule(ruleId, name, description, consequence, priority, logicalOperator, conditionList);
-        }
-    }
-
-    @Override
-    public String toString() {
+  public String toString() {
 
         StringBuffer buffer = new StringBuffer();
         buffer.append(this.getClass().getSimpleName()).append("={");
         buffer.append("ruleId=").append(ruleId);
+        buffer.append(", parentRuleId=").append(parentRuleId);
         buffer.append(", name=").append(name);
-        buffer.append(", description=").append(description);
+        buffer.append(", code=").append(code);
         buffer.append(", consequence=").append(consequence);
         buffer.append(", priority=").append(priority);
         buffer.append(", logicalOperator=").append(logicalOperator);
         buffer.append(", conditionList=").append(conditionList);
-        buffer.append("}");
+        buffer.append(", childRules=").append(childRules);
+        buffer.append("}\n");
 
         return buffer.toString();
 
     }
+
 
     public ArrayList<Condition> getConditionList() {
         return conditionList;
@@ -69,12 +68,12 @@ public class Rule {
         this.consequence = consequence;
     }
 
-    public String getDescription() {
-        return description;
+    public String getCode() {
+        return code;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public RuleEngineLogicalOperator getLogicalOperator() {
@@ -101,14 +100,30 @@ public class Rule {
         this.priority = priority;
     }
 
-    public int getRuleId() {
+    public Integer getRuleId() {
         return ruleId;
     }
 
-    public void setRuleId(int ruleId) {
+    public void setRuleId(Integer ruleId) {
         this.ruleId = ruleId;
     }
-    
 
+    public LinkedList<Rule> getChildRules() {
+        return childRules;
+    }
+
+    public void setChildRules(LinkedList<Rule> childRules) {
+        this.childRules = childRules;
+    }
+
+    public Integer getParentRuleId() {
+        return parentRuleId;
+    }
+
+    public void setParentRuleId(Integer parentRuleId) {
+        this.parentRuleId = parentRuleId;
+    }
+
+    
 
 }

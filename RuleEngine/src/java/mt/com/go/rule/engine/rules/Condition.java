@@ -2,7 +2,7 @@ package mt.com.go.rule.engine.rules;
 
 public class Condition {
 
-    private int conditionId;
+    private Integer conditionId;
     private String description;
     private String parameterName;
     private String expression;
@@ -12,7 +12,7 @@ public class Condition {
     public Condition() {
     }
 
-    public Condition(int conditionId, String description, String attributeName, String expression, String conditionClass) {
+    public Condition(Integer conditionId, String description, String attributeName, String expression, String conditionClass) {
         this.conditionId = conditionId;
         this.description = description;
         this.parameterName = attributeName;
@@ -67,11 +67,11 @@ public class Condition {
         this.expression = expression;
     }
 
-    public int getConditionId() {
+    public Integer getConditionId() {
         return conditionId;
     }
 
-    public void setConditionId(int conditionId) {
+    public void setConditionId(Integer conditionId) {
         this.conditionId = conditionId;
     }
 

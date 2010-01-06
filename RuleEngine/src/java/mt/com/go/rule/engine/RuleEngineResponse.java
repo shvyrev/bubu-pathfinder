@@ -6,8 +6,8 @@ import java.util.Hashtable;
 public class RuleEngineResponse {
 
     private Hashtable<String, String> parameters;
-    private boolean successful;
     private ArrayList<String> messages = new ArrayList<String>();
+    private String path;
 
     public RuleEngineResponse() {
     }
@@ -20,14 +20,6 @@ public class RuleEngineResponse {
         this.parameters = parameters;
     }
 
-    public boolean isSuccessful() {
-        return successful;
-    }
-
-    public void setSuccessful(boolean successful) {
-        this.successful = successful;
-    }
-
     public ArrayList<String> getMessages() {
         return messages;
     }
@@ -36,14 +28,24 @@ public class RuleEngineResponse {
         this.messages = messages;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+
+
     @Override
     public String toString() {
 
         StringBuffer buffer = new StringBuffer();
         buffer.append(this.getClass().getSimpleName()).append("={");
-        buffer.append("successful=").append(successful);
         buffer.append(", messages=").append(messages);
         buffer.append(", parameters=").append(parameters);
+        buffer.append(", path=").append(path);
         buffer.append("}");
 
         return buffer.toString();

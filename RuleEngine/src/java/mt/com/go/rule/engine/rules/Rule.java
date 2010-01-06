@@ -45,7 +45,7 @@ public class Rule {
         buffer.append(", logicalOperator=").append(logicalOperator);
         buffer.append(", conditionList=").append(conditionList);
         buffer.append(", childRules=").append(childRules);
-        buffer.append("}\n");
+        buffer.append("}");
 
         return buffer.toString();
 

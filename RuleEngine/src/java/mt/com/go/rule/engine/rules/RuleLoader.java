@@ -106,6 +106,9 @@ public class RuleLoader {
         }
 
         prioritiseRules();
+
+        logAllRulesLowDetail();
+
         return rules;
     }
 
@@ -130,88 +133,6 @@ public class RuleLoader {
         }
     }
 
-//    public ArrayList<Rule> loadRulesOld(boolean forceReload) {
-//
-//        if (!forceReload) {
-//            if (rules != null) {
-//                return rules;
-//            }
-//        }
-//
-//        rules = new ArrayList<Rule>();
-//
-//
-//
-//        for (Object currentRuleSet : ruleSetsTable.keySet().toArray()) {
-//
-//            Integer key = (Integer) currentRuleSet;
-//            RuleSet ruleSet = ruleSetsTable.get(key);
-//            ruleSet.setRuleSetId(key.intValue());
-//
-//            ArrayList<Rule> ruleList = loadRuleSetsFromDB(key, rulesTable, conditionsTable);
-//            ruleSet.setRules(ruleList);
-//
-//            rules.add(ruleSet);
-//        }
-//
-//        RuleEngineLogger.logDebug(this, "Finished Loading Rules...");
-//
-//        RuleEngineLogger.logDebug(this, "Rules summary...");
-//
-//        logAllRulesLowDetail();
-//
-//        return rules;
-//    }
-//    private ArrayList<Rule> loadRuleSetsFromDB(Integer ruleSetId, Hashtable<Integer, Rule> rulesTable, Hashtable<Integer, Condition> conditionsTable) {
-//
-//        ArrayList<Rule> ruleSet = new ArrayList<Rule>();
-//
-//        try {
-//            Connection con = getConnection();
-//            PreparedStatement pstmt = con.prepareStatement("select rule_id, priority from rule_set_conf where rule_set_id = ? order by priority");
-//            pstmt.setInt(1, ruleSetId.intValue());
-//            ResultSet rs = pstmt.executeQuery();
-//
-//
-//            ArrayList<RuleSetConfig> ruleSetConfig = new ArrayList<RuleSetConfig>();
-//
-//            while (rs.next()) {
-//                ruleSetConfig.add(new RuleSetConfig(new Integer(rs.getInt("rule_id")), new Integer(rs.getInt("priority"))));
-//            }
-//
-//            int priorityLevel = 0;
-//
-//            for (RuleSetConfig currentRuleSetConfig : ruleSetConfig) {
-//                Rule tempRule = rulesTable.get(currentRuleSetConfig.getRuleId());
-//
-//                Rule rule = tempRule.getClone();
-//                priorityLevel++;
-//                rule.setPriority(new Integer(priorityLevel));
-//
-//
-//
-//                RuleEngineLogger.logDebug(this, rule.toString());
-//
-//                for (Integer currentConditionId : conditionIdList) {
-//                    if (rule.getConditionList() == null) {
-//                        rule.setConditionList(new ArrayList<Condition>());
-//                    }
-//
-//                    Condition condition = conditionsTable.get(currentConditionId);
-//                    rule.getConditionList().add(condition);
-//                    RuleEngineLogger.logDebug(this, "Adding > " + condition);
-//                }
-//                ruleSet.add(rule);
-//                //RuleEngineLogger.logDebug(this, rule.toString());
-//            }
-//
-//        } catch (Exception ex) {
-//            RuleEngineLogger.logDebug(this, "Error while loading rule set", ex);
-//        }
-//
-//        return ruleSet;
-//
-//    }
     private ArrayList<Integer> loadRuleConditionMapFromDB(Integer ruleId) {
 
         ArrayList<Integer> conditionIdList = new ArrayList<Integer>();
@@ -305,26 +226,14 @@ public class RuleLoader {
 
     }
 
-//    public void logRulesFullDetail() {
-//
-//        rules = loadRules(false);
-//
-//        for (RuleSet currentRuleSet : rules) {
-//            for (Rule currentRule : currentRuleSet.getRules()) {
-//                RuleEngineLogger.logDebug(this, currentRule.toString());
-//            }
-//        }
-//
-//    }
-//
     public void logAllRulesLowDetail() {
 
         for (Rule currentRule : rules) {
 
-            RuleEngineLogger.logDebug(this, currentRule.getName() + " (" + currentRule.getCode() + ") (" + currentRule.getPriority() + ")");
+            RuleEngineLogger.logDebug(this, "| - " + currentRule.getName() + " (" + currentRule.getCode() + ") (" + currentRule.getPriority() + ")");
 
             if (currentRule.getChildRules() != null && currentRule.getChildRules().size() > 0) {
-                logAllRulesLowDetail(currentRule.getChildRules(), 1);
+                logAllRulesLowDetail(currentRule.getChildRules(), 2);
             }
         }
 
@@ -336,14 +245,13 @@ public class RuleLoader {
 
             StringBuffer levelString = new StringBuffer("");
             for (int i = 0; i < level; i++) {
-                levelString.append("> ");
+                levelString.append("| ");
             }
 
-            RuleEngineLogger.logDebug(this, levelString + currentRule.getName() + " (" + currentRule.getCode() + ") (" + currentRule.getPriority() + ")");
+            RuleEngineLogger.logDebug(this, levelString + "- " + currentRule.getName() + " (" + currentRule.getCode() + ") (" + currentRule.getPriority() + ")");
 
             if (currentRule.getChildRules() != null && currentRule.getChildRules().size() > 0) {
-                level++;
-                logAllRulesLowDetail(currentRule.getChildRules(), level);
+                logAllRulesLowDetail(currentRule.getChildRules(), level + 1);
             }
         }
 

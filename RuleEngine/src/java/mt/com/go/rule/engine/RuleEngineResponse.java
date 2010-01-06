@@ -43,7 +43,7 @@ public class RuleEngineResponse {
 
         StringBuffer buffer = new StringBuffer();
         buffer.append(this.getClass().getSimpleName()).append("={");
-        buffer.append(", messages=").append(messages);
+        buffer.append("messages=").append(messages);
         buffer.append(", parameters=").append(parameters);
         buffer.append(", path=").append(path);
         buffer.append("}");

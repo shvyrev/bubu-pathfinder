@@ -21,7 +21,6 @@ public class DecisionEngineTests extends TestCase {
 
             response = engine.executeRule(request);
 
-            assertTrue("Engine returned successful", response.isSuccessful());
             assertTrue("Response contains imsi parameter", response.getParameters().containsKey("imsi"));
             assertTrue("Imsi value is populated", response.getParameters().get("imsi") != null && response.getParameters().get("imsi").trim().length() > 0);
 

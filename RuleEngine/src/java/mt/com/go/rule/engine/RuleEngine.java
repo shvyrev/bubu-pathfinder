@@ -60,7 +60,11 @@ public class RuleEngine {
 
             if (currentRule.getName().equalsIgnoreCase(request.getDecisionType())) {
                 try {
-                    processRule(request, currentRule, response);
+
+                    LinkedList<Rule> rule = new LinkedList<Rule>();
+                    rule.add(currentRule);
+
+                    processRule(request, rule, response);
                 } catch (Exception ex) {
                     RuleEngineLogger.logDebug(this, "Failed to process rule", ex);
                     response.getMessages().add("Internal Error : " + ex.getMessage());
@@ -76,291 +80,306 @@ public class RuleEngine {
 
     }
 
-    private void processRule(RuleEngineRequest request, Rule rule, RuleEngineResponse response) throws Exception {
+    private void processRule(RuleEngineRequest request, LinkedList<Rule> rules, RuleEngineResponse response) throws Exception {
 
+        for (Rule currentRule : rules) {
 
-        boolean ruleSatisfied = false;
+            RuleEngineLogger.logDebug(this, "Entered rule : " + currentRule.getName() + "(" + currentRule.getCode() + ")");
 
-        int matchedConditions = 0;
+            boolean ruleSatisfied = false;
 
-        for (Condition currentCondition : rule.getConditionList()) {
-            // loop conditions
+            int matchedConditions = 0;
 
-            boolean conditionMatched = false;
+            if (currentRule.getConditionList() == null || currentRule.getConditionList().size() == 0) {
+                ruleSatisfied = true;
+            }
 
-            if (currentCondition.getParameterName() != null && currentCondition.getParameterName().trim().length() > 0) {
-                // if condition parameter name is set
+            for (Condition currentCondition : currentRule.getConditionList()) {
+                // loop conditions
 
-                String conditionExpressionBackup = currentCondition.getExpression();
-                currentCondition.setExpression(updateExpressionVariables(currentCondition.getExpression(), request.getParameters()));
+                boolean conditionMatched = false;
 
-                String parameter = null;
+                if (currentCondition.getParameterName() != null && currentCondition.getParameterName().trim().length() > 0) {
+                    // if condition parameter name is set
 
-                if (request.getParameters() != null && request.getParameters().size() > 0) {
-                    // Get the parameter
-                    parameter = request.getParameters().get(currentCondition.getParameterName());
-                }
+                    String conditionExpressionBackup = currentCondition.getExpression();
+                    currentCondition.setExpression(updateExpressionVariables(currentCondition.getExpression(), request.getParameters()));
 
-                if (currentCondition.getExpression().equalsIgnoreCase("exists")) {
-                    // Check if parameter exists
-                    if (parameter != null) {
-                        conditionMatched = true;
+                    String parameter = null;
+
+                    if (request.getParameters() != null && request.getParameters().size() > 0) {
+                        // Get the parameter
+                        parameter = request.getParameters().get(currentCondition.getParameterName());
                     }
 
-                } else if (currentCondition.getExpression().equalsIgnoreCase("!exists")) {
-                    // Check if parameter does not exist
-                    if (parameter == null) {
-                        conditionMatched = true;
-                    }
+                    if (currentCondition.getExpression().equalsIgnoreCase("exists")) {
+                        // Check if parameter exists
+                        if (parameter != null) {
+                            conditionMatched = true;
+                        }
 
-                } else if (currentCondition.getExpression().trim().startsWith(">") || currentCondition.getExpression().trim().startsWith("<")) {
+                    } else if (currentCondition.getExpression().equalsIgnoreCase("!exists")) {
+                        // Check if parameter does not exist
+                        if (parameter == null) {
+                            conditionMatched = true;
+                        }
 
-                    // identify comparator
-                    String comparator = null;
-                    if (currentCondition.getExpression().trim().startsWith(">=")) {
-                        comparator = ">=";
-                    } else if (currentCondition.getExpression().trim().startsWith("<=")) {
-                        comparator = "<=";
-                    } else if (currentCondition.getExpression().trim().startsWith(">")) {
-                        comparator = ">";
-                    } else if (currentCondition.getExpression().trim().startsWith("<")) {
-                        comparator = "<";
-                    }
+                    } else if (currentCondition.getExpression().trim().startsWith(">") || currentCondition.getExpression().trim().startsWith("<")) {
 
-                    // the expression of the current condition
-                    String expressionValue = currentCondition.getExpression().trim();
-                    // remove comparator from the expression
-                    expressionValue = expressionValue.substring(expressionValue.indexOf(comparator) + comparator.length(), expressionValue.length()).trim();
-                    // the value of the parameter to match with the expression
-                    String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
+                        // identify comparator
+                        String comparator = null;
+                        if (currentCondition.getExpression().trim().startsWith(">=")) {
+                            comparator = ">=";
+                        } else if (currentCondition.getExpression().trim().startsWith("<=")) {
+                            comparator = "<=";
+                        } else if (currentCondition.getExpression().trim().startsWith(">")) {
+                            comparator = ">";
+                        } else if (currentCondition.getExpression().trim().startsWith("<")) {
+                            comparator = "<";
+                        }
 
-                    if (expressionValue.startsWith("@date(")) {
-                        // compare dates
+                        // the expression of the current condition
+                        String expressionValue = currentCondition.getExpression().trim();
+                        // remove comparator from the expression
+                        expressionValue = expressionValue.substring(expressionValue.indexOf(comparator) + comparator.length(), expressionValue.length()).trim();
+                        // the value of the parameter to match with the expression
+                        String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
 
-                        try {
+                        if (expressionValue.startsWith("@date(")) {
+                            // compare dates
+
+                            try {
+
+                                conditionMatched = compareDates(expressionValue, parameterValue, comparator);
+
+                            } catch (Exception e) {
+
+                                response.getMessages().add("'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated");
+                                RuleEngineLogger.logDebug(this, "'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated", e);
+
+                            }
+
+                        } else {
+                            // compare numbers
+
+                            try {
+
+                                conditionMatched = compareNumbers(expressionValue, parameterValue, comparator);
+
+                            } catch (Exception e) {
+
+                                response.getMessages().add("'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated");
+                                RuleEngineLogger.logDebug(this, "'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated", e);
+
+                            }
+
+                        }
+
+                    } else if (currentCondition.getExpression().trim().startsWith("=") || currentCondition.getExpression().trim().startsWith("!=")) {
+
+                        String comparator = null;
+                        if (currentCondition.getExpression().trim().startsWith("=")) {
+                            comparator = "=";
+                        } else if (currentCondition.getExpression().trim().startsWith("!=")) {
+                            comparator = "!=";
+                        }
+
+                        String expressionValue = currentCondition.getExpression().trim();
+                        expressionValue = expressionValue.substring(expressionValue.indexOf(comparator) + comparator.length(), expressionValue.length()).trim();
+
+                        String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
+
+                        if (expressionValue.startsWith("@date(")) {
+                            // compare dates
 
                             conditionMatched = compareDates(expressionValue, parameterValue, comparator);
 
-                        } catch (Exception e) {
-
-                            response.getMessages().add("'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated");
-                            RuleEngineLogger.logDebug(this, "'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated", e);
-
-                        }
-
-                    } else {
-                        // compare numbers
-
-                        try {
-
-                            conditionMatched = compareNumbers(expressionValue, parameterValue, comparator);
-
-                        } catch (Exception e) {
-
-                            response.getMessages().add("'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated");
-                            RuleEngineLogger.logDebug(this, "'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated", e);
-
-                        }
-
-                    }
-
-                } else if (currentCondition.getExpression().trim().startsWith("=") || currentCondition.getExpression().trim().startsWith("!=")) {
-
-                    String comparator = null;
-                    if (currentCondition.getExpression().trim().startsWith("=")) {
-                        comparator = "=";
-                    } else if (currentCondition.getExpression().trim().startsWith("!=")) {
-                        comparator = "!=";
-                    }
-
-                    String expressionValue = currentCondition.getExpression().trim();
-                    expressionValue = expressionValue.substring(expressionValue.indexOf(comparator) + comparator.length(), expressionValue.length()).trim();
-
-                    String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
-
-                    if (expressionValue.startsWith("@date(")) {
-                        // compare dates
-
-                        conditionMatched = compareDates(expressionValue, parameterValue, comparator);
-
-                    } else {
-
-                        if (isNumber(expressionValue) && isNumber(parameterValue)) {
-                            // compare numbers
-
-                            conditionMatched = compareNumbers(expressionValue, parameterValue, comparator);
-
                         } else {
-                            // compare strings
 
-                            if (expressionValue.length() > 0) {
+                            if (isNumber(expressionValue) && isNumber(parameterValue)) {
+                                // compare numbers
 
-                                if (comparator.equalsIgnoreCase("=") && parameterValue.equalsIgnoreCase(expressionValue)) {
-                                    conditionMatched = true;
-                                } else if (comparator.equalsIgnoreCase("!=") && !parameterValue.equalsIgnoreCase(expressionValue)) {
-                                    conditionMatched = true;
+                                conditionMatched = compareNumbers(expressionValue, parameterValue, comparator);
+
+                            } else {
+                                // compare strings
+
+                                if (expressionValue.length() > 0) {
+
+                                    if (comparator.equalsIgnoreCase("=") && parameterValue.equalsIgnoreCase(expressionValue)) {
+                                        conditionMatched = true;
+                                    } else if (comparator.equalsIgnoreCase("!=") && !parameterValue.equalsIgnoreCase(expressionValue)) {
+                                        conditionMatched = true;
+                                    }
                                 }
+
                             }
-
                         }
-                    }
 
-                } else if (parameter != null && parameter.matches(currentCondition.getExpression())) {
-                    // Check if the parameter matches the expression
-                    conditionMatched = true;
-                }
-
-                currentCondition.setExpression(conditionExpressionBackup);
-
-            } else if (currentCondition.getConditionClass() != null && currentCondition.getConditionClass().trim().length() > 0) {
-                // Execute condition class
-
-                try {
-                    Class cls = Class.forName(currentCondition.getConditionClass());
-                    ICondition condition = (ICondition) cls.newInstance();
-                    boolean conditionSuccessful = condition.doCondition(request, response);
-
-                    if (conditionSuccessful) {
+                    } else if (parameter != null && parameter.matches(currentCondition.getExpression())) {
+                        // Check if the parameter matches the expression
                         conditionMatched = true;
                     }
-                } catch (Exception ex) {
-                    throw new RuleEngineException("> Error running condition", ex);
-                }
 
-            }
+                    currentCondition.setExpression(conditionExpressionBackup);
 
-            if (conditionMatched) {
-                matchedConditions++;
-                RuleEngineLogger.logDebug(this, "> Condition matched, " + currentCondition.toString());
-            } else {
-                RuleEngineLogger.logDebug(this, "> Condition not matched, " + currentCondition.toString());
-            }
+                } else if (currentCondition.getConditionClass() != null && currentCondition.getConditionClass().trim().length() > 0) {
+                    // Execute condition class
 
-            if (matchedConditions > 0 && rule.getLogicalOperator() == RuleEngineLogicalOperator.OR) {
-                // if DecisionEngineLogicalOperator is set to OR only 1 match is required
-                ruleSatisfied = true;
-                RuleEngineLogger.logDebug(this, "> Rule Satisfied");
-                break;
-            }
+                    try {
+                        Class cls = Class.forName(currentCondition.getConditionClass());
+                        ICondition condition = (ICondition) cls.newInstance();
+                        boolean conditionSuccessful = condition.doCondition(request, response);
 
-        }
-
-        if (rule.getLogicalOperator() == RuleEngineLogicalOperator.AND && matchedConditions == rule.getConditionList().size()) {
-            // if DecisionEngineLogicalOperator is set to AND all conditions need to be matched
-            ruleSatisfied = true;
-            RuleEngineLogger.logDebug(this, "> Rule Satisfied");
-        }
-
-
-
-        if (ruleSatisfied) {
-            // rule has been satisfied, proceed to consequences
-
-            if (response.getPath() == null) {
-                response.setPath("");
-            }
-
-            if (response.getPath().length() > 0) {
-                response.setPath(response.getPath() + "." + rule.getCode());
-            } else {
-                response.setPath(rule.getCode());
-            }
-
-
-            try {
-
-                StringTokenizer tokenizer = new StringTokenizer(rule.getConsequence(), "|");
-
-                while (tokenizer.hasMoreTokens()) {
-
-                    String consequenceElement = tokenizer.nextToken().trim();
-
-                    RuleEngineLogger.logDebug(this, "> > Running consequence : " + consequenceElement);
-
-                    if (consequenceElement.startsWith("SET-PARAM ")) {
-                        // add/update a parameter in the parameter list
-
-                        try {
-
-                            String parameterName = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.indexOf("=")).trim();
-                            String parameterValue = consequenceElement.substring(consequenceElement.indexOf("=") + 1, consequenceElement.length()).trim();
-
-                            if (response.getParameters() != null) {
-                                response.getParameters().put(parameterName, parameterValue);
-                            }
-
-                        } catch (Exception e) {
-                            throw new RuleEngineException("Failed to set parameter", e);
+                        if (conditionSuccessful) {
+                            conditionMatched = true;
                         }
-
-
-                    } else if (consequenceElement.startsWith("REMOVE-PARAM ")) {
-                        // remove a parameter from the parameter list
-
-                        try {
-
-                            String parameterName = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
-
-                            if (response.getParameters() != null) {
-                                response.getParameters().remove(parameterName);
-                            }
-
-                        } catch (Exception e) {
-                            throw new RuleEngineException("Failed to remove parameter", e);
-                        }
-
-
-                    } else if (consequenceElement.startsWith("ADD-MESSAGE ")) {
-                        // add a message to the message list
-
-                        String message = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
-                        response.getMessages().add(message);
-
-                    } else if (consequenceElement.startsWith("SLEEP ")) {
-                        // wait for a number of seconds
-
-                        try {
-
-                            String sleepSeconds = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
-
-                            if (sleepSeconds == null || sleepSeconds.trim().length() == 0) {
-                                throw new RuleEngineException("Sleep not setup properly");
-                            }
-
-                            long sleepMillis = (long) Double.parseDouble(sleepSeconds) * 1000;
-                            Thread.sleep(sleepMillis);
-
-                        } catch (Exception e) {
-                            throw new RuleEngineException("Failed to sleep", e);
-                        }
-
-                    } else if (consequenceElement.startsWith("RUN")) {
-                        // execute a custom consequence
-
-                        String className = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
-
-                        Class cls = Class.forName(className);
-                        IConsequence consequence = (IConsequence) cls.newInstance();
-                        consequence.doConsequence(request, response);
-
+                    } catch (Exception ex) {
+                        throw new RuleEngineException("> Error running condition", ex);
                     }
 
                 }
 
+                if (conditionMatched) {
+                    matchedConditions++;
+                    RuleEngineLogger.logDebug(this, "> Condition matched, " + currentCondition.toString());
+                } else {
+                    RuleEngineLogger.logDebug(this, "> Condition not matched, " + currentCondition.toString());
+                }
 
-            } catch (Exception ex) {
-
-                RuleEngineLogger.logDebug(this, "Error running consequence", ex);
-                throw new RuleEngineException("Error loading consequence", ex);
+                if (matchedConditions > 0 && currentRule.getLogicalOperator() == RuleEngineLogicalOperator.OR) {
+                    // if DecisionEngineLogicalOperator is set to OR only 1 match is required
+                    ruleSatisfied = true;
+                    RuleEngineLogger.logDebug(this, "> Rule Satisfied");
+                    break;
+                }
 
             }
 
-        }
-
-        if (rule.getChildRules() != null && rule.getChildRules().size() > 0) {
-            for (Rule currentChildRule : rule.getChildRules()) {
-                processRule(request, currentChildRule, response);
+            if (currentRule.getLogicalOperator() == RuleEngineLogicalOperator.AND && matchedConditions == currentRule.getConditionList().size()) {
+                // if DecisionEngineLogicalOperator is set to AND all conditions need to be matched
+                ruleSatisfied = true;
+                RuleEngineLogger.logDebug(this, "> Rule Satisfied");
             }
+
+
+
+            if (ruleSatisfied) {
+                // rule has been satisfied, proceed to consequences
+
+                if (response.getPath() == null) {
+                    response.setPath("");
+                }
+
+                if (response.getPath().length() > 0) {
+                    response.setPath(response.getPath() + "." + currentRule.getCode());
+                } else {
+                    response.setPath(currentRule.getCode());
+                }
+
+
+                try {
+
+                    if (currentRule.getConsequence() == null) {
+                        currentRule.setConsequence("");
+                    }
+
+                    StringTokenizer tokenizer = new StringTokenizer(currentRule.getConsequence(), "|");
+
+                    while (tokenizer.hasMoreTokens()) {
+
+                        String consequenceElement = tokenizer.nextToken().trim();
+
+                        RuleEngineLogger.logDebug(this, "> > Running consequence : " + consequenceElement);
+
+                        if (consequenceElement.startsWith("SET-PARAM ")) {
+                            // add/update a parameter in the parameter list
+
+                            try {
+
+                                String parameterName = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.indexOf("=")).trim();
+                                String parameterValue = consequenceElement.substring(consequenceElement.indexOf("=") + 1, consequenceElement.length()).trim();
+
+                                if (response.getParameters() != null) {
+                                    response.getParameters().put(parameterName, parameterValue);
+                                }
+
+                            } catch (Exception e) {
+                                throw new RuleEngineException("Failed to set parameter", e);
+                            }
+
+
+                        } else if (consequenceElement.startsWith("REMOVE-PARAM ")) {
+                            // remove a parameter from the parameter list
+
+                            try {
+
+                                String parameterName = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
+
+                                if (response.getParameters() != null) {
+                                    response.getParameters().remove(parameterName);
+                                }
+
+                            } catch (Exception e) {
+                                throw new RuleEngineException("Failed to remove parameter", e);
+                            }
+
+
+                        } else if (consequenceElement.startsWith("ADD-MESSAGE ")) {
+                            // add a message to the message list
+
+                            String message = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
+                            response.getMessages().add(message);
+
+                        } else if (consequenceElement.startsWith("SLEEP ")) {
+                            // wait for a number of seconds
+
+                            try {
+
+                                String sleepSeconds = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
+
+                                if (sleepSeconds == null || sleepSeconds.trim().length() == 0) {
+                                    throw new RuleEngineException("Sleep not setup properly");
+                                }
+
+                                long sleepMillis = (long) Double.parseDouble(sleepSeconds) * 1000;
+                                Thread.sleep(sleepMillis);
+
+                            } catch (Exception e) {
+                                throw new RuleEngineException("Failed to sleep", e);
+                            }
+
+                        } else if (consequenceElement.startsWith("RUN")) {
+                            // execute a custom consequence
+
+                            String className = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
+
+                            Class cls = Class.forName(className);
+                            IConsequence consequence = (IConsequence) cls.newInstance();
+                            consequence.doConsequence(request, response);
+
+                        }
+
+                    }
+
+
+                } catch (Exception ex) {
+
+                    RuleEngineLogger.logDebug(this, "Error running consequence", ex);
+                    throw new RuleEngineException("Error loading consequence", ex);
+
+                }
+
+                if (currentRule.getChildRules() != null && currentRule.getChildRules().size() > 0) {
+                    processRule(request, currentRule.getChildRules(), response);
+                }
+
+                break;
+
+            }
+
+
+
         }
 
     }

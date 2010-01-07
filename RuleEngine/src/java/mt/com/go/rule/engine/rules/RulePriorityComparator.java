@@ -1,7 +1,6 @@
 package mt.com.go.rule.engine.rules;
 
 import java.util.Comparator;
-import mt.com.go.rule.engine.logging.RuleEngineLogger;
 
 public class RulePriorityComparator implements Comparator {
 

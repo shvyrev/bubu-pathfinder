@@ -4,26 +4,24 @@
  */
 package mt.com.go.rule.engine;
 
+import gnu.jel.CompilationException;
+import gnu.jel.CompiledExpression;
+import gnu.jel.Evaluator;
+import gnu.jel.Library;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mt.com.go.rule.engine.rules.Rule;
 import mt.com.go.rule.engine.rules.RuleLoader;
 
-/**
- *
- * @author Reuben
- */
 public class Main {
 
     public static void main(String[] args) {
 
-        RuleLoader loader = new RuleLoader();
-        ArrayList<Rule> rules = loader.getRules();
 
-        loader.logAllRulesLowDetail();
+        System.out.println("Reube".compareTo("Reuben"));
 
 
-
-        
     }
 }

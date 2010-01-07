@@ -1,19 +1,18 @@
 package mt.com.go.rule.engine;
 
+import gnu.jel.CompiledExpression;
+import gnu.jel.Evaluator;
+import gnu.jel.Library;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mt.com.go.rule.engine.condition.iface.ICondition;
 import mt.com.go.rule.engine.consequence.iface.IConsequence;
 import mt.com.go.rule.engine.enums.RuleEngineLogicalOperator;
@@ -28,7 +27,6 @@ import mt.com.go.rule.engine.rules.RuleLoader;
  *
  * SET-PARAM X=Y - adds a parameter to the parameter list with the name X and value Y
  * REMOVE-PARAM X - removes the parameter with the name X from the parameter list
- * SET-UNSUCCESSFUL - marks the response as unsuccessful
  * ADD-MESSAGE X - adds a message to the message list in the response
  * SLEEP X - waits for X seconds before continuing
  * RUN X - executes the doConsequence method of class X that implements IConsequence
@@ -59,15 +57,19 @@ public class RuleEngine {
         for (Rule currentRule : rules) {
 
             if (currentRule.getName().equalsIgnoreCase(request.getDecisionType())) {
+
                 try {
 
                     LinkedList<Rule> rule = new LinkedList<Rule>();
                     rule.add(currentRule);
 
                     processRule(request, rule, response);
+
                 } catch (Exception ex) {
+
                     RuleEngineLogger.logDebug(this, "Failed to process rule", ex);
-                    response.getMessages().add("Internal Error : " + ex.getMessage());
+                    response.getMessages().add("Internal Error at rule : " + ex.getMessage());
+
                 }
 
             }
@@ -85,46 +87,74 @@ public class RuleEngine {
         for (Rule currentRule : rules) {
 
             RuleEngineLogger.logDebug(this, "Entered rule : " + currentRule.getName() + "(" + currentRule.getCode() + ")");
-
             boolean ruleSatisfied = false;
-
             int matchedConditions = 0;
 
             if (currentRule.getConditionList() == null || currentRule.getConditionList().size() == 0) {
                 ruleSatisfied = true;
             }
 
-            for (Condition currentCondition : currentRule.getConditionList()) {
-                // loop conditions
+            for (Condition currentCondition : currentRule.getConditionList()) { // loop conditions
 
                 boolean conditionMatched = false;
 
-                if (currentCondition.getParameterName() != null && currentCondition.getParameterName().trim().length() > 0) {
-                    // if condition parameter name is set
+                if (currentCondition.getParameterName() != null && currentCondition.getParameterName().trim().length() > 0) { // if condition parameter name is set
 
                     String conditionExpressionBackup = currentCondition.getExpression();
                     currentCondition.setExpression(updateExpressionVariables(currentCondition.getExpression(), request.getParameters()));
 
                     String parameter = null;
 
-                    if (request.getParameters() != null && request.getParameters().size() > 0) {
-                        // Get the parameter
-                        parameter = request.getParameters().get(currentCondition.getParameterName());
+                    if (request.getParameters() != null && request.getParameters().size() > 0) { // Get the parameter
+
+                        parameter = request.getParameters().get(currentCondition.getParameterName()).trim();
                     }
 
-                    if (currentCondition.getExpression().equalsIgnoreCase("exists")) {
-                        // Check if parameter exists
+                    if (currentCondition.getExpression().equalsIgnoreCase("exists")) { // Check if parameter exists
+
                         if (parameter != null) {
                             conditionMatched = true;
                         }
 
-                    } else if (currentCondition.getExpression().equalsIgnoreCase("!exists")) {
-                        // Check if parameter does not exist
+                    } else if (currentCondition.getExpression().equalsIgnoreCase("!exists")) { // Check if parameter does not exist
+
                         if (parameter == null) {
                             conditionMatched = true;
                         }
 
-                    } else if (currentCondition.getExpression().trim().startsWith(">") || currentCondition.getExpression().trim().startsWith("<")) {
+                    } else if (currentCondition.getExpression().startsWith("@el(")) {
+
+                        String expressionValue = currentCondition.getExpression().trim();
+                        expressionValue = expressionValue.replace("@el(", "");
+                        expressionValue = expressionValue.replace(")", "");
+
+                        String expression = parameter + expressionValue;
+
+                        RuleEngineLogger.logDebug(this, "Trying EL Expression '" + expression + "'");
+
+                        // Set up the library
+                        Class[] staticLib = new Class[1];
+                        try {
+                            staticLib[0] = Class.forName("java.lang.Math");
+                            Library lib = new Library(staticLib, null, null, null, null);
+                            lib.markStateDependent("random", null);
+                            CompiledExpression cex = null;
+                            cex = Evaluator.compile(expression, lib);
+                            Object[] objs = new Object[0];
+                            Object result = cex.evaluate(objs);
+
+                            RuleEngineLogger.logDebug(this, "EL Expression '" + expression +"' returned : " + result.toString());
+
+                            if (result.toString().equalsIgnoreCase("true")) {
+                                conditionMatched = true;
+                            }
+
+                        } catch (Throwable e) {
+                            RuleEngineLogger.logDebug(this, "EL Expression Failed", e);
+                            response.getMessages().add("EL Expression " + expression + " failed to evaluate.");
+                        }
+
+                    } else if (currentCondition.getExpression().trim().startsWith(">") || currentCondition.getExpression().trim().startsWith("<")) { // greater or smaller comparison
 
                         // identify comparator
                         String comparator = null;
@@ -143,14 +173,13 @@ public class RuleEngine {
                         // remove comparator from the expression
                         expressionValue = expressionValue.substring(expressionValue.indexOf(comparator) + comparator.length(), expressionValue.length()).trim();
                         // the value of the parameter to match with the expression
-                        String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
+                        //String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
 
-                        if (expressionValue.startsWith("@date(")) {
-                            // compare dates
+                        if (expressionValue.startsWith("@date(")) { // compare dates
 
                             try {
 
-                                conditionMatched = compareDates(expressionValue, parameterValue, comparator);
+                                conditionMatched = compareDates(expressionValue, parameter, comparator);
 
                             } catch (Exception e) {
 
@@ -159,23 +188,13 @@ public class RuleEngine {
 
                             }
 
-                        } else {
-                            // compare numbers
+                        } else { // compare strings
 
-                            try {
-
-                                conditionMatched = compareNumbers(expressionValue, parameterValue, comparator);
-
-                            } catch (Exception e) {
-
-                                response.getMessages().add("'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated");
-                                RuleEngineLogger.logDebug(this, "'" + expressionValue + "' " + comparator + " '" + request.getParameters().get(currentCondition.getParameterName()) + "' could not be evaluated", e);
-
-                            }
+                            conditionMatched = compareStrings(expressionValue, parameter, comparator);
 
                         }
 
-                    } else if (currentCondition.getExpression().trim().startsWith("=") || currentCondition.getExpression().trim().startsWith("!=")) {
+                    } else if (currentCondition.getExpression().trim().startsWith("=") || currentCondition.getExpression().trim().startsWith("!=")) { // equality comparison
 
                         String comparator = null;
                         if (currentCondition.getExpression().trim().startsWith("=")) {
@@ -189,42 +208,32 @@ public class RuleEngine {
 
                         String parameterValue = request.getParameters().get(currentCondition.getParameterName()).trim();
 
-                        if (expressionValue.startsWith("@date(")) {
-                            // compare dates
+                        if (expressionValue.startsWith("@date(")) { // compare dates
 
                             conditionMatched = compareDates(expressionValue, parameterValue, comparator);
 
-                        } else {
+                        } else { // compare strings
 
-                            if (isNumber(expressionValue) && isNumber(parameterValue)) {
-                                // compare numbers
+                            if (expressionValue.length() > 0) {
 
-                                conditionMatched = compareNumbers(expressionValue, parameterValue, comparator);
-
-                            } else {
-                                // compare strings
-
-                                if (expressionValue.length() > 0) {
-
-                                    if (comparator.equalsIgnoreCase("=") && parameterValue.equalsIgnoreCase(expressionValue)) {
-                                        conditionMatched = true;
-                                    } else if (comparator.equalsIgnoreCase("!=") && !parameterValue.equalsIgnoreCase(expressionValue)) {
-                                        conditionMatched = true;
-                                    }
+                                if (comparator.equalsIgnoreCase("=") && parameterValue.equalsIgnoreCase(expressionValue)) {
+                                    conditionMatched = true;
+                                } else if (comparator.equalsIgnoreCase("!=") && !parameterValue.equalsIgnoreCase(expressionValue)) {
+                                    conditionMatched = true;
                                 }
 
                             }
+
                         }
 
-                    } else if (parameter != null && parameter.matches(currentCondition.getExpression())) {
-                        // Check if the parameter matches the expression
+                    } else if (parameter != null && parameter.matches(currentCondition.getExpression())) { // Check if the parameter matches the expression
+
                         conditionMatched = true;
                     }
 
                     currentCondition.setExpression(conditionExpressionBackup);
 
-                } else if (currentCondition.getConditionClass() != null && currentCondition.getConditionClass().trim().length() > 0) {
-                    // Execute condition class
+                } else if (currentCondition.getConditionClass() != null && currentCondition.getConditionClass().trim().length() > 0) { // Execute condition class
 
                     try {
                         Class cls = Class.forName(currentCondition.getConditionClass());
@@ -247,8 +256,8 @@ public class RuleEngine {
                     RuleEngineLogger.logDebug(this, "> Condition not matched, " + currentCondition.toString());
                 }
 
-                if (matchedConditions > 0 && currentRule.getLogicalOperator() == RuleEngineLogicalOperator.OR) {
-                    // if DecisionEngineLogicalOperator is set to OR only 1 match is required
+                if (matchedConditions > 0 && currentRule.getLogicalOperator() == RuleEngineLogicalOperator.OR) { // if DecisionEngineLogicalOperator is set to OR only 1 match is required
+
                     ruleSatisfied = true;
                     RuleEngineLogger.logDebug(this, "> Rule Satisfied");
                     break;
@@ -256,16 +265,14 @@ public class RuleEngine {
 
             }
 
-            if (currentRule.getLogicalOperator() == RuleEngineLogicalOperator.AND && matchedConditions == currentRule.getConditionList().size()) {
-                // if DecisionEngineLogicalOperator is set to AND all conditions need to be matched
+            if (currentRule.getLogicalOperator() == RuleEngineLogicalOperator.AND && matchedConditions == currentRule.getConditionList().size()) { // if DecisionEngineLogicalOperator is set to AND all conditions need to be matched
+
                 ruleSatisfied = true;
                 RuleEngineLogger.logDebug(this, "> Rule Satisfied");
+
             }
 
-
-
-            if (ruleSatisfied) {
-                // rule has been satisfied, proceed to consequences
+            if (ruleSatisfied) { // rule has been satisfied, proceed to consequences
 
                 if (response.getPath() == null) {
                     response.setPath("");
@@ -276,7 +283,6 @@ public class RuleEngine {
                 } else {
                     response.setPath(currentRule.getCode());
                 }
-
 
                 try {
 
@@ -292,8 +298,7 @@ public class RuleEngine {
 
                         RuleEngineLogger.logDebug(this, "> > Running consequence : " + consequenceElement);
 
-                        if (consequenceElement.startsWith("SET-PARAM ")) {
-                            // add/update a parameter in the parameter list
+                        if (consequenceElement.startsWith("SET-PARAM ")) { // add/update a parameter in the parameter list
 
                             try {
 
@@ -308,9 +313,7 @@ public class RuleEngine {
                                 throw new RuleEngineException("Failed to set parameter", e);
                             }
 
-
-                        } else if (consequenceElement.startsWith("REMOVE-PARAM ")) {
-                            // remove a parameter from the parameter list
+                        } else if (consequenceElement.startsWith("REMOVE-PARAM ")) { // remove a parameter from the parameter list
 
                             try {
 
@@ -324,15 +327,18 @@ public class RuleEngine {
                                 throw new RuleEngineException("Failed to remove parameter", e);
                             }
 
+                        } else if (consequenceElement.startsWith("ADD-MESSAGE ")) { // add a message to the message list
 
-                        } else if (consequenceElement.startsWith("ADD-MESSAGE ")) {
-                            // add a message to the message list
 
                             String message = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
+
+                            if (response.getMessages() == null) {
+                                response.setMessages(new ArrayList<String>());
+                            }
+
                             response.getMessages().add(message);
 
-                        } else if (consequenceElement.startsWith("SLEEP ")) {
-                            // wait for a number of seconds
+                        } else if (consequenceElement.startsWith("SLEEP ")) { // wait for a number of seconds
 
                             try {
 
@@ -349,8 +355,8 @@ public class RuleEngine {
                                 throw new RuleEngineException("Failed to sleep", e);
                             }
 
-                        } else if (consequenceElement.startsWith("RUN")) {
-                            // execute a custom consequence
+                        } else if (consequenceElement.startsWith("RUN")) { // execute a custom consequence
+
 
                             String className = consequenceElement.substring(consequenceElement.indexOf(" ") + 1, consequenceElement.length()).trim();
 
@@ -361,7 +367,6 @@ public class RuleEngine {
                         }
 
                     }
-
 
                 } catch (Exception ex) {
 
@@ -377,8 +382,6 @@ public class RuleEngine {
                 break;
 
             }
-
-
 
         }
 
@@ -498,30 +501,23 @@ public class RuleEngine {
         return conditionMatched;
     }
 
-    private boolean compareNumbers(String expressionValue, String parameterValue, String comparator) throws Exception {
+    private boolean compareStrings(String expressionValue, String parameterValue, String comparator) throws Exception {
 
         boolean conditionMatched = false;
 
         if (expressionValue.length() >= 0) {
 
-            BigDecimal expressionValueBD = null;
-            BigDecimal parameterValueBD = null;
-
-
-            expressionValueBD = new BigDecimal(expressionValue);
-            parameterValueBD = new BigDecimal(parameterValue);
-
-            if (comparator.equalsIgnoreCase(">=") && parameterValueBD.compareTo(expressionValueBD) >= 0) {
+            if (comparator.equalsIgnoreCase(">=") && parameterValue.compareTo(expressionValue) >= 0) {
                 conditionMatched = true;
-            } else if (comparator.equalsIgnoreCase("<=") && parameterValueBD.compareTo(expressionValueBD) <= 0) {
+            } else if (comparator.equalsIgnoreCase("<=") && parameterValue.compareTo(expressionValue) <= 0) {
                 conditionMatched = true;
-            } else if (comparator.equalsIgnoreCase(">") && parameterValueBD.compareTo(expressionValueBD) == 1) {
+            } else if (comparator.equalsIgnoreCase(">") && parameterValue.compareTo(expressionValue) >= 1) {
                 conditionMatched = true;
-            } else if (comparator.equalsIgnoreCase("<") && parameterValueBD.compareTo(expressionValueBD) == -1) {
+            } else if (comparator.equalsIgnoreCase("<") && parameterValue.compareTo(expressionValue) <= -1) {
                 conditionMatched = true;
-            } else if (comparator.equalsIgnoreCase("=") && parameterValueBD.compareTo(expressionValueBD) == 0) {
+            } else if (comparator.equalsIgnoreCase("=") && parameterValue.compareTo(expressionValue) == 0) {
                 conditionMatched = true;
-            } else if (comparator.equalsIgnoreCase("!=") && parameterValueBD.compareTo(expressionValueBD) != 0) {
+            } else if (comparator.equalsIgnoreCase("!=") && parameterValue.compareTo(expressionValue) != 0) {
                 conditionMatched = true;
             }
 
